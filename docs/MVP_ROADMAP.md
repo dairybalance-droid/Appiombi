@@ -36,6 +36,14 @@ The MVP is not a web-first product.
 - Configure auth
 - Seed lookup values if needed
 
+Current status:
+
+- Supabase project initialized
+- `schema.sql` applied successfully
+- `rls_policies.sql` applied successfully
+- initial tables and views verified in Supabase
+- Auth configuration and first seeded test data still pending
+
 ## Phase 2: Native Data Foundation
 
 - choose local database direction
