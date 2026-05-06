@@ -117,6 +117,41 @@ class SupabaseService {
     debugPrint('[Appiombi][Farms] Load start for user: $userId');
 
     try {
+      debugPrint('[Appiombi][Farms] Query profiles for current auth user.');
+      final profileRows = await _withTimeout<List<dynamic>>(
+        label: 'profiles.select_self',
+        future: _client!
+            .from('profiles')
+            .select('id, auth_user_id, email, account_status, is_active, email_verified_at')
+            .limit(1),
+      );
+
+      if (profileRows.isEmpty) {
+        debugPrint('[Appiombi][Farms] Nessun profilo trovato per auth user: $userId');
+        throw Exception(
+          'Profilo utente non trovato. Verifica il collegamento tra auth.users e profiles.',
+        );
+      }
+
+      final profile = profileRows.first as Map<String, dynamic>;
+      final profileId = profile['id'] as String? ?? 'unknown';
+      debugPrint(
+        '[Appiombi][Farms] Profile found: id=$profileId auth_user_id=${profile['auth_user_id']} email=${profile['email']} status=${profile['account_status']} active=${profile['is_active']} verified=${profile['email_verified_at'] != null}',
+      );
+
+      debugPrint('[Appiombi][Farms] Query active_farm_users for current profile.');
+      final membershipRows = await _withTimeout<List<dynamic>>(
+        label: 'active_farm_users.select_self',
+        future: _client!
+            .from('active_farm_users')
+            .select('farm_id, role, profile_id')
+            .eq('profile_id', profileId),
+      );
+
+      debugPrint(
+        '[Appiombi][Farms] Active memberships received: ${membershipRows.length}',
+      );
+
       debugPrint('[Appiombi][Farms] Query farms with RLS filtering.');
       final farmRows = await _withTimeout<List<dynamic>>(
         label: 'farms.select_accessible',
@@ -134,6 +169,9 @@ class SupabaseService {
       debugPrint('[Appiombi][Farms] Farms received: ${farmIds.length}');
 
       if (farmIds.isEmpty) {
+        debugPrint(
+          '[Appiombi][Farms] Nessuna farm accessibile per profile_id=$profileId. owner/membership link might be missing.',
+        );
         return const [];
       }
 
