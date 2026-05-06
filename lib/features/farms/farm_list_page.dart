@@ -64,9 +64,13 @@ class _FarmListPageState extends ConsumerState<FarmListPage> {
 
                   if (filtered.isEmpty) {
                     return Center(
-                      child: Text(
-                        'Nessuna azienda disponibile.',
-                        style: theme.textTheme.bodyMedium,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          'Nessuna azienda disponibile per questo utente.',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium,
+                        ),
                       ),
                     );
                   }
@@ -124,7 +128,7 @@ class _FarmListPageState extends ConsumerState<FarmListPage> {
                 loading: () => const LoadingView(message: 'Caricamento aziende...'),
                 error: (error, _) => ErrorView(
                   title: 'Impossibile caricare le aziende',
-                  message: error.toString(),
+                  message: error.toString().replaceFirst('Exception: ', ''),
                 ),
               ),
             ),
