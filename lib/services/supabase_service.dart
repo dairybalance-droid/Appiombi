@@ -96,9 +96,10 @@ class SupabaseService {
   }
 
   Future<List<FarmSummary>> fetchAccessibleFarms() async {
-    if (_client == null) {
+    if (_client == null ||
+        (_config.devBypassLogin && currentUser == null)) {
       debugPrint(
-        '[Appiombi][Farms] Supabase non configurato, uso dati demo locali.',
+        '[Appiombi][Farms] Dati demo locali attivi. configured=${_config.isSupabaseConfigured} bypass=${_config.devBypassLogin} user=${currentUser?.id ?? 'none'}',
       );
       return const [
         FarmSummary(

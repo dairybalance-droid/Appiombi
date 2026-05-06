@@ -17,7 +17,12 @@ class AuthGatePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final config = ref.watch(appConfigProvider);
     final authUser = ref.watch(authUserProvider);
+
+    if (config.devBypassLogin) {
+      return const FarmListPage();
+    }
 
     return authUser.when(
       data: (user) => user == null ? const LoginPage() : const FarmListPage(),
@@ -155,6 +160,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       child: Text(
                         'Configurazione Supabase ancora placeholder. Il pulsante Login apre lo scheletro navigabile per la UI MVP.',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  if (config.devBypassLogin)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.secondary),
+                      ),
+                      child: Text(
+                        'Dev bypass attivo. Questa schermata e\' bypassata automaticamente nello sviluppo locale.',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: AppColors.textPrimary,
                         ),

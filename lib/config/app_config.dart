@@ -5,10 +5,12 @@ class AppConfig {
   AppConfig({
     required this.supabaseUrl,
     required this.supabaseAnonKey,
+    required this.devBypassLogin,
   });
 
   final String supabaseUrl;
   final String supabaseAnonKey;
+  final bool devBypassLogin;
 
   bool get isSupabaseConfigured {
     return _normalizeValue(supabaseUrl).isNotEmpty &&
@@ -35,11 +37,18 @@ class AppConfig {
       supabaseAnonKey: _normalizeValue(
         dotenv.env['SUPABASE_ANON_KEY'] ?? 'your_supabase_anon_key',
       ),
+      devBypassLogin: _parseBool(
+        dotenv.env['APP_DEV_BYPASS_LOGIN'] ?? 'false',
+      ),
     );
   }
 
   static String _normalizeValue(String value) {
     return value.trim();
+  }
+
+  static bool _parseBool(String value) {
+    return value.trim().toLowerCase() == 'true';
   }
 }
 

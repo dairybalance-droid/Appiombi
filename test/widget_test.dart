@@ -9,6 +9,7 @@ void main() {
     final config = AppConfig(
       supabaseUrl: 'your_supabase_project_url',
       supabaseAnonKey: 'your_supabase_anon_key',
+      devBypassLogin: false,
     );
     final supabaseService = SupabaseService(config);
 
