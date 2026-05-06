@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,10 +19,35 @@ class FarmListPage extends ConsumerStatefulWidget {
 
 class _FarmListPageState extends ConsumerState<FarmListPage> {
   String _searchQuery = '';
+  late final Future<List<FarmSummary>> _farmsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _farmsFuture = _loadFarms();
+  }
+
+  Future<List<FarmSummary>> _loadFarms() async {
+    final service = ref.read(supabaseServiceProvider);
+
+    try {
+      return await service.fetchAccessibleFarms().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('[Appiombi][Farms][UI] Timeout caricamento aziende.');
+          throw TimeoutException('Timeout caricamento aziende');
+        },
+      );
+    } on TimeoutException {
+      rethrow;
+    } catch (error) {
+      debugPrint('[Appiombi][Farms][UI] Errore caricamento aziende: $error');
+      rethrow;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final farmsAsync = ref.watch(accessibleFarmsProvider);
     final service = ref.watch(supabaseServiceProvider);
     final theme = Theme.of(context);
 
@@ -55,8 +82,25 @@ class _FarmListPageState extends ConsumerState<FarmListPage> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: farmsAsync.when(
-                data: (farms) {
+              child: FutureBuilder<List<FarmSummary>>(
+                future: _farmsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const LoadingView(message: 'Caricamento aziende...');
+                  }
+
+                  if (snapshot.hasError) {
+                    final message = snapshot.error.toString()
+                        .replaceFirst('Exception: ', '')
+                        .replaceFirst('TimeoutException: ', '');
+
+                    return ErrorView(
+                      title: 'Impossibile caricare le aziende',
+                      message: message,
+                    );
+                  }
+
+                  final farms = snapshot.data ?? const <FarmSummary>[];
                   final filtered = farms.where((farm) {
                     final haystack = '${farm.name} ${farm.formattedAddress} ${farm.farmCode}'.toLowerCase();
                     return haystack.contains(_searchQuery);
@@ -125,11 +169,6 @@ class _FarmListPageState extends ConsumerState<FarmListPage> {
                     },
                   );
                 },
-                loading: () => const LoadingView(message: 'Caricamento aziende...'),
-                error: (error, _) => ErrorView(
-                  title: 'Impossibile caricare le aziende',
-                  message: error.toString().replaceFirst('Exception: ', ''),
-                ),
               ),
             ),
           ],

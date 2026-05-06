@@ -206,9 +206,7 @@ class SupabaseService {
       return farms;
     } on TimeoutException catch (error) {
       debugPrint('[Appiombi][Farms] Timeout: $error');
-      throw Exception(
-        'Timeout nel caricamento aziende. Controlla connessione e configurazione Supabase.',
-      );
+      throw Exception('Timeout caricamento aziende');
     } on PostgrestException catch (error) {
       debugPrint(
         '[Appiombi][Farms] Supabase error: code=${error.code}, message=${error.message}, details=${error.details}',
