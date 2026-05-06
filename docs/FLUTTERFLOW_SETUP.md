@@ -2,7 +2,13 @@
 
 ## Purpose
 
-This document explains how to connect FlutterFlow to the existing Appiombi Supabase project and prepare the first MVP mobile screens.
+This document explains how to connect FlutterFlow to the existing Appiombi Supabase project if FlutterFlow is used as a secondary prototype or exploratory UI tool.
+
+Strategic note:
+
+- FlutterFlow is no longer the recommended primary implementation path for Appiombi
+- the recommended primary stack is pure Flutter native + Supabase + GitHub + Codex
+- this document remains useful for prototype experiments, stakeholder previews, or temporary visual validation
 
 ## Current Backend Status
 
@@ -103,7 +109,7 @@ Never use display names as identifiers.
 
 Farm name is display-only and may be duplicated across farms.
 
-## 6. What FlutterFlow Can Handle Now
+## 6. What FlutterFlow Can Handle As Secondary Tool
 
 - login and logout screens
 - email/password forms
@@ -113,6 +119,8 @@ Farm name is display-only and may be duplicated across farms.
 - simple form submission
 - session list views
 - cow list views
+
+These are best treated as prototype-level or exploratory screens unless the team intentionally chooses FlutterFlow for a non-production branch.
 
 ## 7. What Must Stay Outside Pure FlutterFlow For Now
 
@@ -126,7 +134,15 @@ Not to implement yet inside FlutterFlow-only logic:
 
 These are native mobile custom Dart responsibilities for later phases.
 
-## 8. Immediate Validation After Connection
+## 8. Recommendation
+
+For Appiombi production development:
+
+- prefer pure Flutter native for implementation
+- use FlutterFlow only if needed for rapid mockup or UI exploration
+- do not make FlutterFlow the source of truth for offline-first or custom clinical workflows
+
+## 9. Immediate Validation After Connection
 
 Once FlutterFlow is connected:
 

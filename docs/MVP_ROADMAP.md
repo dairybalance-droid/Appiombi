@@ -9,9 +9,10 @@ Deliver a usable native Android/iOS mobile workflow for hoof trimming session ma
 The MVP is not a web-first product.
 
 - primary target: Android and iOS native builds
-- primary UI approach: FlutterFlow
+- primary UI approach: Flutter native
 - primary runtime: Flutter/Dart mobile app
 - primary operational assumption: field work with intermittent or absent connectivity
+- FlutterFlow is secondary and optional for prototyping only
 
 ## Phase 0: Native Foundation
 
@@ -24,6 +25,8 @@ The MVP is not a web-first product.
 - Auth and access specification
 - Security specification
 - Native app architecture
+- Tech stack decision
+- Native Flutter plan
 - Offline/sync specification
 - Supabase schema
 - RLS policy design
@@ -44,13 +47,16 @@ Current status:
 - initial tables and views verified in Supabase
 - Auth configuration and first seeded test data still pending
 
-## Phase 2: Native Data Foundation
+## Phase 2: Native Flutter Foundation
 
+- initialize Flutter native project structure
+- implement theme from brand direction
+- define navigation shell
+- implement Supabase integration in code
+- implement auth flow foundation
 - choose local database direction
-- implement local repositories in custom Dart
+- implement repository layer in Dart
 - implement secure storage for tokens
-- define local record sync model
-- define sync queue and conflict queue storage
 
 ## Phase 3: Access And Farm Management
 
@@ -116,6 +122,7 @@ Current status:
 
 ## Deferred But Prepared
 
+- FlutterFlow prototype support
 - secondary web dashboard
 - full anatomical map UX
 - lesion photos
@@ -140,3 +147,4 @@ Current status:
 - important conflicts do not auto-resolve with last-write-wins
 - user can generate and review tasks
 - user can view farm-specific cow history
+- the production MVP is implementable and maintainable primarily through repository code
