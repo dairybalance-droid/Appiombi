@@ -68,6 +68,23 @@ flutter analyze
 flutter run
 ```
 
+## Windows Shortcut Script
+
+On Windows, after each Codex push, you can run:
+
+```powershell
+scripts\dev_run_chrome.bat
+```
+
+The script runs in sequence:
+
+- `git pull`
+- `flutter pub get`
+- `flutter analyze`
+- `flutter run -d chrome`
+
+The script stops immediately if one step fails and keeps the terminal window open at the end.
+
 ## Current Scope
 
 This first Flutter skeleton includes:
