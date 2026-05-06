@@ -1,0 +1,25 @@
+name: appiombi
+description: Native Flutter mobile app skeleton for Appiombi.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_dotenv: ^6.0.1
+  flutter_riverpod: ^3.3.1
+  go_router: ^17.2.3
+  google_fonts: ^8.0.2
+  supabase_flutter: ^2.12.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env.example
