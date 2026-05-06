@@ -201,7 +201,21 @@ Key fields:
 - `owner_profile_id`
 - `name`
 - `farm_code`
+- `street_address`
+- `street_number`
+- `postal_code`
+- `city`
+- `province`
+- `region`
+- `country`
 - `is_active`
+
+Rules:
+
+- `farms.id` is the only guaranteed unique identifier for farm identity.
+- Farm name must not be used as unique identity in app logic.
+- Different farms may share the same name and even the same street name.
+- UI should use address fields to disambiguate visually similar farms.
 
 ### cows
 
@@ -453,6 +467,23 @@ These views are intended for standard UI and app queries so `deleted_at` rows ar
 - `can_write_farm(farm_id)` controls write access and can enforce subscription read-only behavior.
 - `farm_access_modes` can expose readable per-farm access state without exposing raw subscription rows to invited operators.
 - `super_admin` is internal and should be granted through explicit profile role, not through client secrets.
+
+## Farm List Display Notes
+
+When listing farms in the UI, show:
+
+- farm name
+- full street address
+- city
+- province
+- optional `farm_code`
+
+Example:
+
+- Azienda Agricola Rossi
+  Via Roma 12, 42025 Cavriago (RE)
+- Azienda Agricola Rossi
+  Via Roma 14, 42025 Cavriago (RE)
 
 ## FlutterFlow Compatibility Notes
 

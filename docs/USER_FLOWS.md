@@ -81,6 +81,15 @@ This document defines the main MVP flows for farmer and veterinarian/hoof trimme
 5. If multiple farms exist, farmer sees a farm list.
 6. Farmer opens a farm workspace.
 
+Farm list display rule:
+
+- the list must not rely on farm name as unique identity
+- the UI should show:
+  - farm name
+  - street address and street number
+  - postal code, city, and province
+  - optional farm code
+
 ## Flow 8: Vet / Hoof Trimmer Home
 
 1. Operator signs in successfully.
@@ -92,6 +101,11 @@ This document defines the main MVP flows for farmer and veterinarian/hoof trimme
    - operational notifications
    - predisposizione futura for aggregate statistics
 4. Operator opens a selected farm.
+
+Farm disambiguation rule:
+
+- if two farms share the same name, the user must distinguish them by address details
+- internal selection and routing must always use `farms.id`, never farm name
 
 ## Flow 9: Farmer Invites External Operator
 

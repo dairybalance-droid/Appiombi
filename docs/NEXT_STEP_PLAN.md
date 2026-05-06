@@ -125,6 +125,7 @@ Use cases:
 - load farms accessible to current user
 - show whether a farm is writable or read-only
 - show active memberships
+- disambiguate farms with the same name using address fields
 
 ### Invitation Flows
 
@@ -167,12 +168,24 @@ Use cases:
 - `farms`
 - `farm_access_modes`
 
+Display recommendation:
+
+- show `name`
+- show `street_address`, `street_number`
+- show `postal_code`, `city`, `province`
+- show `farm_code` only as secondary technical label
+
 ### Farm Dashboard
 
 - `farms`
 - `farm_access_modes`
 - `active_trimming_sessions`
 - `active_clinical_tasks`
+
+Selection rule:
+
+- farm identity in app state and navigation must always use `farms.id`
+- farm name is display-only and must not be treated as unique
 
 ### Session List
 
