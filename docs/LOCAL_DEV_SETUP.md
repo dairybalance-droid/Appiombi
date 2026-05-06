@@ -85,6 +85,25 @@ The script runs in sequence:
 
 The script stops immediately if one step fails and keeps the terminal window open at the end.
 
+## Windows Desktop Launcher
+
+You can create a Desktop launcher once with:
+
+```powershell
+scripts\create_desktop_launcher.bat
+```
+
+After that, you can start Appiombi directly from the Windows Desktop with double click on:
+
+- `Appiombi Dev Chrome`
+
+The Desktop shortcut runs `scripts\dev_run_chrome.bat`, which:
+
+- updates the repository with `git pull`
+- runs `flutter pub get`
+- runs `flutter analyze`
+- launches the app with `flutter run -d chrome`
+
 ## Current Scope
 
 This first Flutter skeleton includes:
