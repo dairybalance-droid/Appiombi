@@ -10,11 +10,6 @@ class FarmSummary {
   const FarmSummary({
     required this.id,
     required this.name,
-    required this.streetAddress,
-    required this.streetNumber,
-    required this.postalCode,
-    required this.city,
-    required this.province,
     required this.farmCode,
     required this.accessMode,
     required this.canRead,
@@ -23,21 +18,10 @@ class FarmSummary {
 
   final String id;
   final String name;
-  final String streetAddress;
-  final String streetNumber;
-  final String postalCode;
-  final String city;
-  final String province;
   final String farmCode;
   final String accessMode;
   final bool canRead;
   final bool canWrite;
-
-  String get formattedAddress {
-    final firstLine = [streetAddress, streetNumber].where((part) => part.isNotEmpty).join(' ');
-    final secondLine = [postalCode, city, province].where((part) => part.isNotEmpty).join(' ');
-    return [firstLine, secondLine].where((part) => part.isNotEmpty).join(', ');
-  }
 }
 
 class CowPreview {
@@ -120,11 +104,6 @@ class SupabaseService {
         FarmSummary(
           id: 'demo-farm-1',
           name: 'Azienda Test Appiombi',
-          streetAddress: 'Via Roma',
-          streetNumber: '12',
-          postalCode: '42025',
-          city: 'Cavriago',
-          province: 'RE',
           farmCode: 'APP-DEMO-01',
           accessMode: 'writable',
           canRead: true,
@@ -142,9 +121,7 @@ class SupabaseService {
         label: 'farms.select_accessible',
         future: _client!
             .from('farms')
-            .select(
-              'id, name, street_address, street_number, postal_code, city, province, farm_code',
-            )
+            .select('id, name, farm_code')
             .order('name'),
       );
 
@@ -190,11 +167,6 @@ class SupabaseService {
         return FarmSummary(
           id: row['id'] as String,
           name: row['name'] as String? ?? 'Farm',
-          streetAddress: row['street_address'] as String? ?? '',
-          streetNumber: row['street_number'] as String? ?? '',
-          postalCode: row['postal_code'] as String? ?? '',
-          city: row['city'] as String? ?? '',
-          province: row['province'] as String? ?? '',
           farmCode: row['farm_code'] as String? ?? '',
           accessMode: access['access_mode'] as String,
           canRead: access['can_read'] as bool,

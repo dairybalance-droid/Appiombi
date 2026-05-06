@@ -102,7 +102,7 @@ class _FarmListPageState extends ConsumerState<FarmListPage> {
 
                   final farms = snapshot.data ?? const <FarmSummary>[];
                   final filtered = farms.where((farm) {
-                    final haystack = '${farm.name} ${farm.formattedAddress} ${farm.farmCode}'.toLowerCase();
+                    final haystack = '${farm.name} ${farm.farmCode}'.toLowerCase();
                     return haystack.contains(_searchQuery);
                   }).toList();
 
@@ -145,20 +145,11 @@ class _FarmListPageState extends ConsumerState<FarmListPage> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              farm.formattedAddress,
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                            const SizedBox(height: 8),
+                            if (farm.farmCode.isNotEmpty) const SizedBox(height: 8),
                             Wrap(
                               spacing: 8,
                               runSpacing: 8,
                               children: [
-                                if (farm.city.isNotEmpty)
-                                  _InfoPill(label: farm.city),
-                                if (farm.province.isNotEmpty)
-                                  _InfoPill(label: farm.province),
                                 if (farm.farmCode.isNotEmpty)
                                   _InfoPill(label: farm.farmCode),
                               ],
