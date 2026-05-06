@@ -11,23 +11,35 @@ class AppConfig {
   final String supabaseAnonKey;
 
   bool get isSupabaseConfigured {
-    return supabaseUrl.isNotEmpty &&
-        supabaseAnonKey.isNotEmpty &&
+    return _normalizeValue(supabaseUrl).isNotEmpty &&
+        _normalizeValue(supabaseAnonKey).isNotEmpty &&
         supabaseUrl != 'your_supabase_project_url' &&
         supabaseAnonKey != 'your_supabase_anon_key';
   }
 
   static Future<AppConfig> load() async {
     try {
-      await dotenv.load(fileName: '.env.example');
+      await dotenv.load(fileName: '.env');
     } catch (_) {
-      // Keep placeholder configuration when the asset is not yet bundled.
+      try {
+        await dotenv.load(fileName: '.env.example');
+      } catch (_) {
+        // Keep placeholder configuration when no dotenv asset is available.
+      }
     }
 
     return AppConfig(
-      supabaseUrl: dotenv.env['SUPABASE_URL'] ?? 'your_supabase_project_url',
-      supabaseAnonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? 'your_supabase_anon_key',
+      supabaseUrl: _normalizeValue(
+        dotenv.env['SUPABASE_URL'] ?? 'your_supabase_project_url',
+      ),
+      supabaseAnonKey: _normalizeValue(
+        dotenv.env['SUPABASE_ANON_KEY'] ?? 'your_supabase_anon_key',
+      ),
     );
+  }
+
+  static String _normalizeValue(String value) {
+    return value.trim();
   }
 }
 
