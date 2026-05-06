@@ -31,11 +31,12 @@ class _FarmListPageState extends ConsumerState<FarmListPage> {
           IconButton(
             tooltip: 'Logout',
             onPressed: () async {
+              final router = GoRouter.of(context);
               await service.signOut();
               if (!mounted) {
                 return;
               }
-              context.go('/');
+              router.go('/');
             },
             icon: const Icon(Icons.logout_rounded),
           ),
@@ -72,7 +73,7 @@ class _FarmListPageState extends ConsumerState<FarmListPage> {
 
                   return ListView.separated(
                     itemCount: filtered.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final farm = filtered[index];
                       return AppCard(
