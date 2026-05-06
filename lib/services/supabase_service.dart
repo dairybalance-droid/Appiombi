@@ -115,15 +115,21 @@ class SupabaseService {
 
     final userId = currentUser?.id ?? 'unknown';
     debugPrint('[Appiombi][Farms] Load start for user: $userId');
+    final stopwatch = Stopwatch()..start();
 
     try {
       debugPrint('[Appiombi][Farms] Query profiles for current auth user.');
+      final profileStopwatch = Stopwatch()..start();
       final profileRows = await _withTimeout<List<dynamic>>(
         label: 'profiles.select_self',
         future: _client!
             .from('profiles')
             .select('id, auth_user_id, email, account_status, is_active, email_verified_at')
             .limit(1),
+      );
+      profileStopwatch.stop();
+      debugPrint(
+        '[Appiombi][Farms] profiles.select_self completed in ${profileStopwatch.elapsedMilliseconds} ms',
       );
 
       if (profileRows.isEmpty) {
@@ -140,6 +146,7 @@ class SupabaseService {
       );
 
       debugPrint('[Appiombi][Farms] Query active_farm_users for current profile.');
+      final membershipStopwatch = Stopwatch()..start();
       final membershipRows = await _withTimeout<List<dynamic>>(
         label: 'active_farm_users.select_self',
         future: _client!
@@ -147,41 +154,68 @@ class SupabaseService {
             .select('farm_id, role, profile_id')
             .eq('profile_id', profileId),
       );
+      membershipStopwatch.stop();
+      debugPrint(
+        '[Appiombi][Farms] active_farm_users.select_self completed in ${membershipStopwatch.elapsedMilliseconds} ms',
+      );
 
       debugPrint(
         '[Appiombi][Farms] Active memberships received: ${membershipRows.length}',
       );
 
-      debugPrint('[Appiombi][Farms] Query farms with RLS filtering.');
-      final farmRows = await _withTimeout<List<dynamic>>(
-        label: 'farms.select_accessible',
-        future: _client!
-            .from('farms')
-            .select('id, name, farm_code')
-            .order('name'),
-      );
-
-      final farmIds = farmRows
-          .map((row) => row['id'] as String?)
+      final farmIds = membershipRows
+          .map((row) => row['farm_id'] as String?)
           .whereType<String>()
           .toList();
-
-      debugPrint('[Appiombi][Farms] Farms received: ${farmIds.length}');
+      debugPrint('[Appiombi][Farms] Farm ids from memberships: $farmIds');
 
       if (farmIds.isEmpty) {
         debugPrint(
-          '[Appiombi][Farms] Nessuna farm accessibile per profile_id=$profileId. owner/membership link might be missing.',
+          '[Appiombi][Farms] Nessuna membership attiva trovata per profile_id=$profileId.',
         );
         return const [];
       }
 
-      debugPrint('[Appiombi][Farms] Query farm_access_modes for ${farmIds.length} farm(s).');
+      debugPrint(
+        '[Appiombi][Farms] Query farms by explicit membership ids to avoid full-table RLS scan.',
+      );
+      final farmsStopwatch = Stopwatch()..start();
+      final farmRows = await _withTimeout<List<dynamic>>(
+        label: 'farms.select_by_membership_ids',
+        future: _client!
+            .from('farms')
+            .select('id, name, farm_code')
+            .inFilter('id', farmIds)
+            .order('name'),
+      );
+      farmsStopwatch.stop();
+      debugPrint(
+        '[Appiombi][Farms] farms.select_by_membership_ids completed in ${farmsStopwatch.elapsedMilliseconds} ms',
+      );
+
+      debugPrint('[Appiombi][Farms] Farm records received: ${farmRows.length}');
+
+      if (farmRows.isEmpty) {
+        debugPrint(
+          '[Appiombi][Farms] Nessun record farms restituito per ids membership $farmIds. Possible farms RLS recursion/performance issue.',
+        );
+        return const [];
+      }
+
+      debugPrint(
+        '[Appiombi][Farms] Query farm_access_modes for ${farmIds.length} farm(s).',
+      );
+      final accessStopwatch = Stopwatch()..start();
       final accessRows = await _withTimeout<List<dynamic>>(
         label: 'farm_access_modes.select',
         future: _client!
             .from('farm_access_modes')
             .select('farm_id, access_mode, reason, can_read, can_write')
             .inFilter('farm_id', farmIds),
+      );
+      accessStopwatch.stop();
+      debugPrint(
+        '[Appiombi][Farms] farm_access_modes.select completed in ${accessStopwatch.elapsedMilliseconds} ms',
       );
 
       debugPrint('[Appiombi][Farms] Access rows received: ${accessRows.length}');
@@ -213,17 +247,23 @@ class SupabaseService {
         );
       }).toList();
 
-      debugPrint('[Appiombi][Farms] Final farms mapped: ${farms.length}');
+      stopwatch.stop();
+      debugPrint(
+        '[Appiombi][Farms] Final farms mapped: ${farms.length} in ${stopwatch.elapsedMilliseconds} ms',
+      );
       return farms;
     } on TimeoutException catch (error) {
+      stopwatch.stop();
       debugPrint('[Appiombi][Farms] Timeout: $error');
       throw Exception('Timeout caricamento aziende');
     } on PostgrestException catch (error) {
+      stopwatch.stop();
       debugPrint(
         '[Appiombi][Farms] Supabase error: code=${error.code}, message=${error.message}, details=${error.details}',
       );
       throw Exception('Errore Supabase nel caricamento aziende: ${error.message}');
     } catch (error) {
+      stopwatch.stop();
       debugPrint('[Appiombi][Farms] Unexpected error: $error');
       throw Exception('Errore inatteso nel caricamento aziende: $error');
     }
