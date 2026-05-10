@@ -76,11 +76,11 @@ returns trigger
 language plpgsql
 as $$
 begin
-  if new.status = 'closed' and new.closed_at is null then
+  if new.status::text = 'closed' and new.closed_at is null then
     new.closed_at = timezone('utc', now());
   end if;
 
-  if new.status = 'reopened' and new.reopened_at is null then
+  if new.status::text = 'reopened' and new.reopened_at is null then
     new.reopened_at = timezone('utc', now());
   end if;
 
@@ -98,7 +98,7 @@ for each row execute function public.normalize_trimming_session_core();
 create unique index if not exists uq_trimming_sessions_one_modifiable_per_farm
 on public.trimming_sessions (farm_id)
 where deleted_at is null
-  and status in ('open', 'reopened');
+  and status::text in ('open', 'reopened');
 
 create index if not exists idx_trimming_sessions_farm_type_status_started
 on public.trimming_sessions (farm_id, session_type, status, started_at desc);
