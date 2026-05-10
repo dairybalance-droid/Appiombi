@@ -584,6 +584,21 @@ Regola:
 - definire cosa manca
 - preparare vincoli su sessione aperta unica e anti-duplicato capo per sessione
 
+Stato attuale:
+
+- questo step e coperto dalla migrazione `20260510_add_data_collection_core.sql`
+- la migrazione estende `trimming_sessions` e `cow_visits` gia esistenti
+- non crea tabelle duplicate per sessioni o visite
+- non introduce aperture RLS: riusa le policy farm-scoped gia presenti su sessioni e visite
+- introduce il primo nucleo reale per:
+  - tipo sessione
+  - stato `reopened`
+  - `cow_number` integer
+  - soft delete logico
+  - anti-duplicato per sessione
+  - campi base dati generici
+  - marker di conflitto offline/sync
+
 ## Step 2: servizi Supabase
 
 - definire query/session services

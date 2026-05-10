@@ -239,13 +239,18 @@ Rules:
 
 Top-level session container.
 
+Step 1 database core for real data collection extends this table instead of creating a duplicate session table.
+
 Key fields:
 
 - `id`
 - `farm_id`
+- `session_type`
 - `created_by_profile_id`
 - `started_at`
 - `ended_at`
+- `closed_at`
+- `reopened_at`
 - `status`
 - `title`
 - `notes`
@@ -254,6 +259,7 @@ Rules:
 
 - session may span multiple days
 - session may be reopened and edited
+- only one modifiable session (`open` or `reopened`) should exist per farm at a time
 - UI and standard operational queries should prefer `active_trimming_sessions`.
 
 ### trimming_session_days
@@ -264,31 +270,46 @@ Optional explicit day log for non-consecutive session work.
 
 One saved visit for one cow inside one session.
 
+Step 1 database core extends the existing table so the real collection flow can start from session -> cow visit -> general data, without introducing a parallel visit table.
+
 Key fields:
 
 - `id`
 - `session_id`
 - `farm_id`
 - `cow_id`
+- `cow_number`
 - `visit_date`
 - `insertion_index`
 - `criticality_score`
 - `sole_count`
 - `bandage_count`
+- `soles_count`
+- `bandages_count`
 - `corkscrew_grade`
+- `corkscrew_code`
 - `laminitis_status`
+- `laminitis_code`
 - `antibiotic_given`
+- `antibiotic_code`
 - `antiinflammatory_given`
+- `anti_inflammatory_code`
+- `recheck_code`
 - `straw_box_required`
 - `evaluate_culling`
 - `is_chronic_cow`
 - `other_flag`
 - `notes`
+- `status`
+- `needs_conflict_resolution`
+- `original_cow_number`
+- `conflict_reason`
 
 Rules:
 
-- unique on `(session_id, cow_id)`
-- prevents duplicate same-cow save in one session
+- unique on active `(session_id, cow_number)` rows for the real collection flow
+- same cow number must not be duplicated inside the same session unless the record is soft-deleted
+- historical visits in different sessions remain distinct and do not overwrite previous visits
 - UI and standard operational queries should prefer `active_cow_visits`.
 
 ### claw_zone_observations
@@ -415,7 +436,21 @@ These views are intended for standard UI and app queries so `deleted_at` rows ar
 
 - `open`
 - `closed`
+- `reopened`
 - `archived`
+
+### Session Type
+
+- `herd_trim`
+- `selected_trim`
+- `emergency`
+- `recheck`
+
+### Cow Visit Status
+
+- `draft`
+- `saved`
+- `deleted`
 
 ### Legal Document Types
 
