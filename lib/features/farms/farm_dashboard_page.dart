@@ -26,6 +26,7 @@ class FarmDashboardPage extends ConsumerStatefulWidget {
 
 class _FarmDashboardPageState extends ConsumerState<FarmDashboardPage> {
   late final Future<FarmSummary?> _farmFuture;
+  bool _sessionActionInProgress = false;
 
   @override
   void initState() {
@@ -49,10 +50,7 @@ class _FarmDashboardPageState extends ConsumerState<FarmDashboardPage> {
     return null;
   }
 
-  Future<void> _showNewSessionDialog(
-    BuildContext context,
-    FarmSummary farm,
-  ) async {
+  Future<void> _showNewSessionDialog(FarmSummary farm) async {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -66,12 +64,11 @@ class _FarmDashboardPageState extends ConsumerState<FarmDashboardPage> {
                   contentPadding: EdgeInsets.zero,
                   title: Text(option),
                   trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () {
+                  onTap: () async {
                     Navigator.of(dialogContext).pop();
-                    context.go(
-                      '/farms/${widget.farmId}/sessions/new-session'
-                      '?type=${Uri.encodeComponent(option)}'
-                      '&farmName=${Uri.encodeComponent(farm.name)}',
+                    await _openOrCreateSession(
+                      farm: farm,
+                      selectedSessionTypeLabel: option,
                     );
                   },
                 ),
@@ -86,6 +83,85 @@ class _FarmDashboardPageState extends ConsumerState<FarmDashboardPage> {
         );
       },
     );
+  }
+
+  Future<void> _openOrCreateSession({
+    required FarmSummary farm,
+    required String selectedSessionTypeLabel,
+  }) async {
+    setState(() => _sessionActionInProgress = true);
+    final router = GoRouter.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final service = ref.read(supabaseServiceProvider);
+      final session = await service.openOrCreateWorkingSession(
+        farmId: farm.id,
+        requestedSessionTypeCode: sessionTypeLabelToCode(selectedSessionTypeLabel),
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      router.go(
+        '/farms/${farm.id}/sessions/${session.id}'
+        '?type=${Uri.encodeComponent(session.sessionTypeLabel)}'
+        '&farmName=${Uri.encodeComponent(farm.name)}',
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('Errore apertura sessione: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _sessionActionInProgress = false);
+      }
+    }
+  }
+
+  Future<void> _openLastSession({
+    required FarmSummary farm,
+  }) async {
+    setState(() => _sessionActionInProgress = true);
+    final router = GoRouter.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final service = ref.read(supabaseServiceProvider);
+      final session = await service.reopenLatestSessionForFarm(farm.id);
+
+      if (!mounted) {
+        return;
+      }
+
+      if (session == null) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Nessuna sessione disponibile da riaprire.')),
+        );
+        return;
+      }
+
+      router.go(
+        '/farms/${farm.id}/sessions/${session.id}'
+        '?type=${Uri.encodeComponent(session.sessionTypeLabel)}'
+        '&farmName=${Uri.encodeComponent(farm.name)}',
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('Errore apertura ultima sessione: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _sessionActionInProgress = false);
+      }
+    }
   }
 
   @override
@@ -110,42 +186,47 @@ class _FarmDashboardPageState extends ConsumerState<FarmDashboardPage> {
           ),
         ],
       ),
-      body: FutureBuilder<FarmSummary?>(
-        future: _farmFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const LoadingView(message: 'Caricamento azienda...');
-          }
+      body: Stack(
+        children: [
+          FutureBuilder<FarmSummary?>(
+            future: _farmFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const LoadingView(message: 'Caricamento azienda...');
+              }
 
-          if (snapshot.hasError) {
-            final message = snapshot.error.toString()
-                .replaceFirst('Exception: ', '')
-                .replaceFirst('TimeoutException: ', '');
+              if (snapshot.hasError) {
+                final message = snapshot.error.toString()
+                    .replaceFirst('Exception: ', '')
+                    .replaceFirst('TimeoutException: ', '');
 
-            return ErrorView(
-              title: 'Impossibile aprire l\'azienda',
-              message: message,
-            );
-          }
+                return ErrorView(
+                  title: 'Impossibile aprire l\'azienda',
+                  message: message,
+                );
+              }
 
-          final farm = snapshot.data;
-          if (farm == null) {
-            return const ErrorView(
-              title: 'Azienda non trovata',
-              message: 'La farm selezionata non e disponibile per questo utente.',
-            );
-          }
+              final farm = snapshot.data;
+              if (farm == null) {
+                return const ErrorView(
+                  title: 'Azienda non trovata',
+                  message: 'La farm selezionata non e disponibile per questo utente.',
+                );
+              }
 
-          return _DashboardBody(
-            farm: farm,
-            onNewSession: () => _showNewSessionDialog(context, farm),
-            onEditLastSession: () => context.go(
-              '/farms/${farm.id}/sessions/${previousSessionRows.first.id}'
-              '?type=${Uri.encodeComponent(previousSessionRows.first.sessionType)}'
-              '&farmName=${Uri.encodeComponent(farm.name)}',
+              return _DashboardBody(
+                farm: farm,
+                onNewSession: () => _showNewSessionDialog(farm),
+                onEditLastSession: () => _openLastSession(farm: farm),
+              );
+            },
+          ),
+          if (_sessionActionInProgress)
+            const ColoredBox(
+              color: Color(0x66FFFFFF),
+              child: LoadingView(message: 'Apertura sessione...'),
             ),
-          );
-        },
+        ],
       ),
     );
   }

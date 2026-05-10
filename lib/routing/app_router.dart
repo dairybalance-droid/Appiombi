@@ -53,6 +53,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/farms/:farmId/visits/new',
         builder: (context, state) => CowVisitPage(
           farmId: state.pathParameters['farmId'] ?? '',
+          cowVisitId: state.uri.queryParameters['cowVisitId'],
           sessionId: state.uri.queryParameters['sessionId'],
           sessionType: state.uri.queryParameters['sessionType'],
           cowNumber: state.uri.queryParameters['cowNumber'],

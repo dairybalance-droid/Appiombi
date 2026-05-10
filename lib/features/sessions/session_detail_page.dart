@@ -1,12 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../services/supabase_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_primary_button.dart';
+import '../../widgets/error_view.dart';
+import '../../widgets/loading_view.dart';
 import 'session_mock_data.dart';
 
-class SessionDetailPage extends StatelessWidget {
+class SessionDetailPage extends ConsumerStatefulWidget {
   const SessionDetailPage({
     super.key,
     required this.farmId,
@@ -21,22 +27,252 @@ class SessionDetailPage extends StatelessWidget {
   final String farmName;
 
   @override
+  ConsumerState<SessionDetailPage> createState() => _SessionDetailPageState();
+}
+
+class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
+  late Future<_SessionDetailData> _sessionFuture;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  bool _sessionClosing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _sessionFuture = _loadSessionData();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.trim();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<_SessionDetailData> _loadSessionData() async {
+    final service = ref.read(supabaseServiceProvider);
+    final results = await Future.wait([
+      service.fetchSession(widget.sessionId),
+      service.fetchSessionVisits(widget.sessionId),
+    ]).timeout(
+      const Duration(seconds: 10),
+      onTimeout: () => throw TimeoutException('Timeout caricamento sessione'),
+    );
+
+    return _SessionDetailData(
+      session: results[0] as TrimmingSessionSummary,
+      visits: results[1] as List<SessionVisitRow>,
+    );
+  }
+
+  Future<void> _reloadSessionData() async {
+    setState(() {
+      _sessionFuture = _loadSessionData();
+    });
+  }
+
+  Future<void> _openAddCowDialog(_SessionDetailData data) async {
+    final controller = TextEditingController();
+    String? inlineError;
+    bool submitting = false;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            Future<void> submit() async {
+              final navigator = Navigator.of(dialogContext);
+              final rawValue = controller.text.trim();
+              if (!RegExp(r'^-?\d+$').hasMatch(rawValue)) {
+                setDialogState(() {
+                  inlineError = 'Inserisci un numero intero valido.';
+                });
+                return;
+              }
+
+              final cowNumber = int.parse(rawValue);
+              setDialogState(() {
+                submitting = true;
+                inlineError = null;
+              });
+
+              try {
+                final visit = await ref.read(supabaseServiceProvider).createDraftVisit(
+                      farmId: widget.farmId,
+                      sessionId: widget.sessionId,
+                      cowNumber: cowNumber,
+                    );
+
+                if (!mounted) {
+                  return;
+                }
+
+                navigator.pop();
+                await this.context.push(
+                  '/farms/${widget.farmId}/visits/new'
+                  '?cowVisitId=${Uri.encodeComponent(visit.id)}'
+                  '&sessionId=${Uri.encodeComponent(widget.sessionId)}'
+                  '&sessionType=${Uri.encodeComponent(data.session.sessionTypeLabel)}'
+                  '&cowNumber=${Uri.encodeComponent(cowNumber.toString())}',
+                );
+                await _reloadSessionData();
+              } on DuplicateCowNumberException {
+                setDialogState(() {
+                  inlineError = 'Capo già presente.';
+                  submitting = false;
+                });
+              } catch (error) {
+                setDialogState(() {
+                  inlineError = 'Errore creazione visita: $error';
+                  submitting = false;
+                });
+              }
+            }
+
+            return AlertDialog(
+              title: const Text('Nuova visita vacca'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    enabled: !submitting,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      signed: true,
+                      decimal: false,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Numero capo',
+                      hintText: 'Es. 101 o -12',
+                      errorText: inlineError,
+                      suffixIcon: IconButton(
+                        onPressed: null,
+                        icon: const Icon(Icons.mic_none_rounded),
+                        tooltip: 'Microfono non disponibile',
+                      ),
+                    ),
+                    onSubmitted: (_) => submit(),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: submitting
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Annulla'),
+                ),
+                ElevatedButton(
+                  onPressed: submitting ? null : submit,
+                  child: Text(submitting ? 'Attendere...' : 'OK'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _openExistingVisit({
+    required String cowVisitId,
+    required int cowNumber,
+    required String sessionTypeLabel,
+  }) async {
+    await context.push(
+      '/farms/${widget.farmId}/visits/new'
+      '?cowVisitId=${Uri.encodeComponent(cowVisitId)}'
+      '&sessionId=${Uri.encodeComponent(widget.sessionId)}'
+      '&sessionType=${Uri.encodeComponent(sessionTypeLabel)}'
+      '&cowNumber=${Uri.encodeComponent(cowNumber.toString())}'
+      '&mode=edit',
+    );
+    await _reloadSessionData();
+  }
+
+  Future<void> _closeSession(TrimmingSessionSummary session) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Fine sessione'),
+          content: const Text('Vuoi concludere la sessione?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Annulla'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Prosegui'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) {
+      return;
+    }
+
+    setState(() => _sessionClosing = true);
+    try {
+      if (session.status != 'closed') {
+        await ref.read(supabaseServiceProvider).closeSession(sessionId: session.id);
+        await _reloadSessionData();
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      await _showSessionSummaryDialog(
+        context: context,
+        sessionType: session.sessionTypeLabel,
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore chiusura sessione: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _sessionClosing = false);
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final resolvedType = sessionType.isEmpty ? 'Pareggio di mandria' : sessionType;
-    final resolvedFarmName = farmName.isEmpty ? 'Azienda selezionata' : farmName;
+    final fallbackType =
+        widget.sessionType.isEmpty ? 'Pareggio di mandria' : widget.sessionType;
+    final fallbackFarmName =
+        widget.farmName.isEmpty ? 'Azienda selezionata' : widget.farmName;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(resolvedType),
+        title: Text(fallbackType),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go(
-          '/farms/$farmId/visits/new'
-          '?sessionId=${Uri.encodeComponent(sessionId)}'
-          '&sessionType=${Uri.encodeComponent(resolvedType)}'
-          '&farmName=${Uri.encodeComponent(resolvedFarmName)}',
-        ),
+        onPressed: _sessionClosing
+            ? null
+            : () async {
+                final data = await _sessionFuture;
+                if (!mounted) {
+                  return;
+                }
+                await _openAddCowDialog(data);
+              },
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
@@ -44,224 +280,287 @@ class SessionDetailPage extends StatelessWidget {
         ),
         child: const Icon(Icons.add_rounded),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  resolvedFarmName,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Data sessione: 10 maggio 2026',
-                  style: theme.textTheme.bodySmall,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Tipo sessione: $resolvedType',
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Capi registrati nella sessione',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.border),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Table(
-                      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                      columnWidths: const {
-                        0: FixedColumnWidth(62),
-                        1: FixedColumnWidth(92),
-                        2: FixedColumnWidth(180),
-                        3: FixedColumnWidth(120),
-                        4: FixedColumnWidth(80),
-                        5: FixedColumnWidth(80),
-                      },
+      body: FutureBuilder<_SessionDetailData>(
+        future: _sessionFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const LoadingView(message: 'Caricamento sessione...');
+          }
+
+          if (snapshot.hasError) {
+            final message = snapshot.error.toString()
+                .replaceFirst('Exception: ', '')
+                .replaceFirst('TimeoutException: ', '');
+            return ErrorView(
+              title: 'Impossibile caricare la sessione',
+              message: message,
+            );
+          }
+
+          final data = snapshot.data;
+          if (data == null) {
+            return const ErrorView(
+              title: 'Sessione non trovata',
+              message: 'La sessione richiesta non è disponibile.',
+            );
+          }
+
+          final session = data.session;
+          final sessionTypeLabel =
+              session.sessionTypeLabel.isEmpty ? fallbackType : session.sessionTypeLabel;
+          final farmName = fallbackFarmName;
+          final visits = data.visits
+              .where(
+                (visit) => _searchQuery.isEmpty
+                    ? true
+                    : visit.cowNumber.toString().contains(_searchQuery),
+              )
+              .toList();
+
+          return Stack(
+            children: [
+              ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  AppCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TableRow(
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFF0F3F4),
-                          ),
-                          children: [
-                            _tableHeaderCell('Mod.'),
-                            _tableHeaderCell('N. Capo'),
-                            _tableHeaderCell('Lesione piu grave'),
-                            _tableHeaderCell('Farmaci'),
-                            _tableHeaderCell('Suole'),
-                            _tableHeaderCell('Bende'),
-                          ],
-                        ),
-                        for (var i = 0; i < sessionCowEntries.length; i++)
-                          TableRow(
-                            decoration: BoxDecoration(
-                              color: i.isEven ? Colors.white : const Color(0xFFF9FAFA),
-                            ),
-                            children: [
-                              _tableEditCell(
-                                context: context,
-                                farmId: farmId,
-                                sessionId: sessionId,
-                                sessionType: resolvedType,
-                                cowNumber: sessionCowEntries[i].cowNumber,
-                                farmName: resolvedFarmName,
+                        Text(
+                          farmName,
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
                               ),
-                              _tableValueCell(sessionCowEntries[i].cowNumber),
-                              _tableValueCell(sessionCowEntries[i].worstLesion),
-                              _tableValueCell(sessionCowEntries[i].medications),
-                              _tableCheckCell(sessionCowEntries[i].hasSole),
-                              _tableCheckCell(sessionCowEntries[i].hasBandage),
-                            ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Data inizio sessione: ${formatItalianDate(session.startedAt)}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Tipo sessione: $sessionTypeLabel',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Stato sessione: ${session.statusLabel}',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  AppCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Capi registrati nella sessione',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: 14),
+                        TextField(
+                          controller: _searchController,
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.search_rounded),
+                            labelText: 'Cerca capo...',
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        if (visits.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              _searchQuery.isEmpty
+                                  ? 'Nessun capo inserito in questa sessione.'
+                                  : 'Nessun capo trovato con questo filtro.',
+                            ),
+                          )
+                        else
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: AppColors.border),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: Table(
+                                defaultVerticalAlignment:
+                                    TableCellVerticalAlignment.middle,
+                                columnWidths: const {
+                                  0: FixedColumnWidth(62),
+                                  1: FixedColumnWidth(92),
+                                  2: FixedColumnWidth(180),
+                                  3: FixedColumnWidth(120),
+                                  4: FixedColumnWidth(80),
+                                  5: FixedColumnWidth(80),
+                                },
+                                children: [
+                                  TableRow(
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFF0F3F4),
+                                    ),
+                                    children: const [
+                                      _TableHeaderCell('Mod.'),
+                                      _TableHeaderCell('N. Capo'),
+                                      _TableHeaderCell('Lesione piu grave'),
+                                      _TableHeaderCell('Farmaci'),
+                                      _TableHeaderCell('Suole'),
+                                      _TableHeaderCell('Bende'),
+                                    ],
+                                  ),
+                                  for (var i = 0; i < visits.length; i++)
+                                    TableRow(
+                                      decoration: BoxDecoration(
+                                        color: i.isEven
+                                            ? Colors.white
+                                            : const Color(0xFFF9FAFA),
+                                      ),
+                                      children: [
+                                        _TableEditCell(
+                                          onPressed: () => _openExistingVisit(
+                                            cowVisitId: visits[i].id,
+                                            cowNumber: visits[i].cowNumber,
+                                            sessionTypeLabel: sessionTypeLabel,
+                                          ),
+                                        ),
+                                        _TableValueCell(visits[i].cowNumber.toString()),
+                                        _TableValueCell(visits[i].worstLesion),
+                                        _TableValueCell(visits[i].medicationsLabel),
+                                        _TableCheckCell(visits[i].solesCount > 0),
+                                        _TableCheckCell(visits[i].bandagesCount > 0),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                            ),
                           ),
                       ],
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  AppPrimaryButton(
+                    label: 'Fine sessione',
+                    onPressed: _sessionClosing ? null : () => _closeSession(session),
+                  ),
+                ],
+              ),
+              if (_sessionClosing)
+                const ColoredBox(
+                  color: Color(0x66FFFFFF),
+                  child: LoadingView(message: 'Chiusura sessione...'),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          AppPrimaryButton(
-            label: 'Fine sessione',
-            onPressed: () => _showCloseSessionDialog(
-              context: context,
-              sessionType: resolvedType,
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 }
 
-Widget _tableHeaderCell(String label) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    child: Text(
-      label,
-      textAlign: TextAlign.left,
-      style: const TextStyle(
-        fontWeight: FontWeight.w700,
-        color: AppColors.textPrimary,
-        fontSize: 13,
-      ),
-    ),
-  );
+class _SessionDetailData {
+  const _SessionDetailData({
+    required this.session,
+    required this.visits,
+  });
+
+  final TrimmingSessionSummary session;
+  final List<SessionVisitRow> visits;
 }
 
-Widget _tableValueCell(String value) {
-  return Container(
-    decoration: const BoxDecoration(
-      border: Border(
-        top: BorderSide(color: AppColors.border),
+class _TableHeaderCell extends StatelessWidget {
+  const _TableHeaderCell(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Text(
+        label,
+        textAlign: TextAlign.left,
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          color: AppColors.textPrimary,
+          fontSize: 13,
+        ),
       ),
-    ),
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-    child: Text(
-      value,
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 13,
-      ),
-    ),
-  );
+    );
+  }
 }
 
-Widget _tableCheckCell(bool value) {
-  return Container(
-    decoration: const BoxDecoration(
-      border: Border(
-        top: BorderSide(color: AppColors.border),
+class _TableValueCell extends StatelessWidget {
+  const _TableValueCell(this.value);
+
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: AppColors.border),
+        ),
       ),
-    ),
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-    child: value
-        ? const Icon(Icons.check_rounded, size: 18, color: AppColors.success)
-        : const SizedBox.shrink(),
-  );
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      child: Text(
+        value,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 13,
+        ),
+      ),
+    );
+  }
 }
 
-Widget _tableEditCell({
-  required BuildContext context,
-  required String farmId,
-  required String sessionId,
-  required String sessionType,
-  required String cowNumber,
-  required String farmName,
-}) {
-  return Container(
-    decoration: const BoxDecoration(
-      border: Border(
-        top: BorderSide(color: AppColors.border),
+class _TableCheckCell extends StatelessWidget {
+  const _TableCheckCell(this.value);
+
+  final bool value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: AppColors.border),
+        ),
       ),
-    ),
-    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-    child: IconButton(
-      tooltip: 'Modifica capo',
-      onPressed: () => context.go(
-        '/farms/$farmId/visits/new'
-        '?mode=edit'
-        '&sessionId=${Uri.encodeComponent(sessionId)}'
-        '&sessionType=${Uri.encodeComponent(sessionType)}'
-        '&cowNumber=${Uri.encodeComponent(cowNumber)}'
-        '&farmName=${Uri.encodeComponent(farmName)}',
-      ),
-      icon: const Icon(Icons.edit_outlined, size: 18),
-    ),
-  );
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      child: value
+          ? const Icon(Icons.check_rounded, size: 18, color: AppColors.success)
+          : const SizedBox.shrink(),
+    );
+  }
 }
 
-Future<void> _showCloseSessionDialog({
-  required BuildContext context,
-  required String sessionType,
-}) async {
-  await showDialog<void>(
-    context: context,
-    builder: (dialogContext) {
-      return AlertDialog(
-        title: const Text('Fine sessione'),
-        content: const Text('Vuoi concludere la sessione?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Annulla'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              _showSessionSummaryDialog(
-                context: context,
-                sessionType: sessionType,
-              );
-            },
-            child: const Text('Prosegui'),
-          ),
-        ],
-      );
-    },
-  );
+class _TableEditCell extends StatelessWidget {
+  const _TableEditCell({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: AppColors.border),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: IconButton(
+        tooltip: 'Modifica capo',
+        onPressed: onPressed,
+        icon: const Icon(Icons.edit_outlined, size: 18),
+      ),
+    );
+  }
 }
 
 Future<void> _showSessionSummaryDialog({

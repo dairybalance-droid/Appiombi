@@ -1,37 +1,3 @@
-class SessionRowData {
-  const SessionRowData({
-    required this.id,
-    required this.dateLabel,
-    required this.sessionType,
-    required this.cowsVisited,
-    required this.soleCount,
-    required this.bandageCount,
-  });
-
-  final String id;
-  final String dateLabel;
-  final String sessionType;
-  final int cowsVisited;
-  final int soleCount;
-  final int bandageCount;
-}
-
-class SessionCowEntry {
-  const SessionCowEntry({
-    required this.cowNumber,
-    required this.worstLesion,
-    required this.medications,
-    required this.hasSole,
-    required this.hasBandage,
-  });
-
-  final String cowNumber;
-  final String worstLesion;
-  final String medications;
-  final bool hasSole;
-  final bool hasBandage;
-}
-
 const sessionTypeOptions = <String>[
   'Pareggio di mandria',
   'Pareggio su selezione',
@@ -39,53 +5,58 @@ const sessionTypeOptions = <String>[
   'Sessione ricontrolli',
 ];
 
-const previousSessionRows = <SessionRowData>[
-  SessionRowData(
-    id: 'session-2026-05-06',
-    dateLabel: '06 maggio 2026',
-    sessionType: 'Pareggio di mandria',
-    cowsVisited: 18,
-    soleCount: 7,
-    bandageCount: 3,
-  ),
-  SessionRowData(
-    id: 'session-2026-05-02',
-    dateLabel: '02 maggio 2026',
-    sessionType: 'Pareggio su selezione',
-    cowsVisited: 9,
-    soleCount: 4,
-    bandageCount: 2,
-  ),
-  SessionRowData(
-    id: 'session-2026-04-25',
-    dateLabel: '25 aprile 2026',
-    sessionType: 'Sessione urgenze',
-    cowsVisited: 5,
-    soleCount: 2,
-    bandageCount: 1,
-  ),
-];
+const _sessionTypeLabelToCode = <String, String>{
+  'Pareggio di mandria': 'herd_trim',
+  'Pareggio su selezione': 'selected_trim',
+  'Sessione urgenze': 'emergency',
+  'Sessione ricontrolli': 'recheck',
+};
 
-const sessionCowEntries = <SessionCowEntry>[
-  SessionCowEntry(
-    cowNumber: '789',
-    worstLesion: 'Ulcera suola',
-    medications: 'AB + AI',
-    hasSole: true,
-    hasBandage: true,
-  ),
-  SessionCowEntry(
-    cowNumber: '234',
-    worstLesion: 'Emorragia suola',
-    medications: 'AI',
-    hasSole: true,
-    hasBandage: false,
-  ),
-  SessionCowEntry(
-    cowNumber: '101',
-    worstLesion: 'Necrosi localizzata',
-    medications: 'AB',
-    hasSole: false,
-    hasBandage: true,
-  ),
-];
+const _sessionTypeCodeToLabel = <String, String>{
+  'herd_trim': 'Pareggio di mandria',
+  'selected_trim': 'Pareggio su selezione',
+  'emergency': 'Sessione urgenze',
+  'recheck': 'Sessione ricontrolli',
+};
+
+String sessionTypeLabelToCode(String label) {
+  return _sessionTypeLabelToCode[label] ?? 'herd_trim';
+}
+
+String sessionTypeCodeToLabel(String code) {
+  return _sessionTypeCodeToLabel[code] ?? 'Pareggio di mandria';
+}
+
+String sessionStatusCodeToLabel(String code) {
+  switch (code) {
+    case 'open':
+      return 'Aperta';
+    case 'closed':
+      return 'Chiusa';
+    case 'reopened':
+      return 'Riaperta';
+    case 'archived':
+      return 'Archiviata';
+    default:
+      return code;
+  }
+}
+
+String formatItalianDate(DateTime date) {
+  const months = [
+    'gennaio',
+    'febbraio',
+    'marzo',
+    'aprile',
+    'maggio',
+    'giugno',
+    'luglio',
+    'agosto',
+    'settembre',
+    'ottobre',
+    'novembre',
+    'dicembre',
+  ];
+
+  return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
+}
