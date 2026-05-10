@@ -133,7 +133,7 @@ alter table public.cow_visits
   add column if not exists antibiotic_code text,
   add column if not exists anti_inflammatory_code text,
   add column if not exists recheck_code text,
-  add column if not exists status public.cow_visit_status not null default 'draft',
+  add column if not exists status public.cow_visit_status not null default 'draft'::public.cow_visit_status,
   add column if not exists needs_conflict_resolution boolean not null default false,
   add column if not exists original_cow_number integer,
   add column if not exists conflict_reason text;
@@ -191,10 +191,10 @@ where anti_inflammatory_code is null
 
 update public.cow_visits
 set status = case
-  when deleted_at is not null then 'deleted'
-  else 'saved'
+  when deleted_at is not null then 'deleted'::public.cow_visit_status
+  else 'saved'::public.cow_visit_status
 end
-where status = 'draft';
+where status = 'draft'::public.cow_visit_status;
 
 comment on column public.cow_visits.cow_number is
 'Step 1 data collection core: integer cow number entered in the session popup. Can be negative when business rules require it.';
@@ -218,7 +218,7 @@ begin
   ) then
     alter table public.cow_visits
       add constraint cow_visits_cow_number_required
-      check (status = 'deleted' or cow_number is not null)
+      check (status = 'deleted'::public.cow_visit_status or cow_number is not null)
       not valid;
   end if;
 end $$;
@@ -266,12 +266,12 @@ begin
     new.antiinflammatory_given = lower(new.anti_inflammatory_code) not in ('', 'no', 'none', 'false');
   end if;
 
-  if new.status = 'deleted' and new.deleted_at is null then
+  if new.status = 'deleted'::public.cow_visit_status and new.deleted_at is null then
     new.deleted_at = timezone('utc', now());
   end if;
 
-  if new.deleted_at is not null and new.status <> 'deleted' then
-    new.status = 'deleted';
+  if new.deleted_at is not null and new.status <> 'deleted'::public.cow_visit_status then
+    new.status = 'deleted'::public.cow_visit_status;
   end if;
 
   select s.farm_id
@@ -331,7 +331,7 @@ with (security_invoker = true) as
 select *
 from public.cow_visits
 where deleted_at is null
-  and status <> 'deleted';
+  and status <> 'deleted'::public.cow_visit_status;
 
 grant select on public.active_cow_visits to authenticated;
 
