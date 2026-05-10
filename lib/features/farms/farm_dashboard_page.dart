@@ -10,6 +10,7 @@ import '../../widgets/app_card.dart';
 import '../../widgets/app_primary_button.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/loading_view.dart';
+import '../sessions/session_mock_data.dart';
 
 class FarmDashboardPage extends ConsumerStatefulWidget {
   const FarmDashboardPage({
@@ -48,14 +49,10 @@ class _FarmDashboardPageState extends ConsumerState<FarmDashboardPage> {
     return null;
   }
 
-  Future<void> _showNewSessionDialog(BuildContext context) async {
-    final options = <String>[
-      'Pareggio di mandria',
-      'Pareggio su selezione',
-      'Sessione urgenze',
-      'Sessione ricontrolli',
-    ];
-
+  Future<void> _showNewSessionDialog(
+    BuildContext context,
+    FarmSummary farm,
+  ) async {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -64,15 +61,17 @@ class _FarmDashboardPageState extends ConsumerState<FarmDashboardPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              for (final option in options)
+              for (final option in sessionTypeOptions)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(option),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () {
                     Navigator.of(dialogContext).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('$option in preparazione.')),
+                    context.go(
+                      '/farms/${widget.farmId}/sessions/new-session'
+                      '?type=${Uri.encodeComponent(option)}'
+                      '&farmName=${Uri.encodeComponent(farm.name)}',
                     );
                   },
                 ),
@@ -139,7 +138,12 @@ class _FarmDashboardPageState extends ConsumerState<FarmDashboardPage> {
 
           return _DashboardBody(
             farm: farm,
-            onNewSession: () => _showNewSessionDialog(context),
+            onNewSession: () => _showNewSessionDialog(context, farm),
+            onEditLastSession: () => context.go(
+              '/farms/${farm.id}/sessions/${previousSessionRows.first.id}'
+              '?type=${Uri.encodeComponent(previousSessionRows.first.sessionType)}'
+              '&farmName=${Uri.encodeComponent(farm.name)}',
+            ),
           );
         },
       ),
@@ -151,10 +155,12 @@ class _DashboardBody extends StatelessWidget {
   const _DashboardBody({
     required this.farm,
     required this.onNewSession,
+    required this.onEditLastSession,
   });
 
   final FarmSummary farm;
   final VoidCallback onNewSession;
+  final VoidCallback onEditLastSession;
 
   @override
   Widget build(BuildContext context) {
@@ -174,9 +180,13 @@ class _DashboardBody extends StatelessWidget {
             _FarmHeroCard(
               farm: farm,
               onNewSession: onNewSession,
+              onEditLastSession: onEditLastSession,
             ),
             const SizedBox(height: 18),
-            _QuickActionsRow(farmId: farm.id),
+            _QuickActionsRow(
+              farmId: farm.id,
+              farmName: farm.name,
+            ),
             const SizedBox(height: 18),
             if (wideLayout)
               Row(
@@ -189,14 +199,20 @@ class _DashboardBody extends StatelessWidget {
                   const SizedBox(width: 16),
                   Expanded(
                     flex: 4,
-                    child: _PreviousVisitsCard(farmId: farm.id),
+                    child: _PreviousVisitsCard(
+                      farmId: farm.id,
+                      farmName: farm.name,
+                    ),
                   ),
                 ],
               )
             else ...[
               const _LatestChartCard(),
               const SizedBox(height: 16),
-              _PreviousVisitsCard(farmId: farm.id),
+              _PreviousVisitsCard(
+                farmId: farm.id,
+                farmName: farm.name,
+              ),
             ],
             const SizedBox(height: 18),
             _ObservationSection(wideLayout: wideLayout),
@@ -211,10 +227,12 @@ class _FarmHeroCard extends StatelessWidget {
   const _FarmHeroCard({
     required this.farm,
     required this.onNewSession,
+    required this.onEditLastSession,
   });
 
   final FarmSummary farm;
   final VoidCallback onNewSession;
+  final VoidCallback onEditLastSession;
 
   @override
   Widget build(BuildContext context) {
@@ -251,6 +269,12 @@ class _FarmHeroCard extends StatelessWidget {
             label: 'Nuova sessione',
             onPressed: onNewSession,
           ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: onEditLastSession,
+            icon: const Icon(Icons.edit_calendar_outlined),
+            label: const Text('Modifica ultima sessione'),
+          ),
         ],
       ),
     );
@@ -258,9 +282,13 @@ class _FarmHeroCard extends StatelessWidget {
 }
 
 class _QuickActionsRow extends StatelessWidget {
-  const _QuickActionsRow({required this.farmId});
+  const _QuickActionsRow({
+    required this.farmId,
+    required this.farmName,
+  });
 
   final String farmId;
+  final String farmName;
 
   @override
   Widget build(BuildContext context) {
@@ -278,7 +306,9 @@ class _QuickActionsRow extends StatelessWidget {
           icon: Icons.history_rounded,
           title: 'Visite precedenti',
           subtitle: 'Accedi allo storico delle sessioni gia registrate.',
-          onTap: () => context.go('/farms/$farmId/sessions'),
+          onTap: () => context.go(
+            '/farms/$farmId/sessions?farmName=${Uri.encodeComponent(farmName)}',
+          ),
         ),
         _QuickActionCard(
           icon: Icons.edit_note_rounded,
@@ -351,16 +381,22 @@ class _QuickActionCard extends StatelessWidget {
 }
 
 class _PreviousVisitsCard extends StatelessWidget {
-  const _PreviousVisitsCard({required this.farmId});
+  const _PreviousVisitsCard({
+    required this.farmId,
+    required this.farmName,
+  });
 
   final String farmId;
+  final String farmName;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return AppCard(
-      onTap: () => context.go('/farms/$farmId/sessions'),
+      onTap: () => context.go(
+        '/farms/$farmId/sessions?farmName=${Uri.encodeComponent(farmName)}',
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -398,7 +434,9 @@ class _PreviousVisitsCard extends StatelessWidget {
           Align(
             alignment: Alignment.centerLeft,
             child: OutlinedButton.icon(
-              onPressed: () => context.go('/farms/$farmId/sessions'),
+              onPressed: () => context.go(
+                '/farms/$farmId/sessions?farmName=${Uri.encodeComponent(farmName)}',
+              ),
               icon: const Icon(Icons.open_in_new_rounded),
               label: const Text('Apri storico sessioni'),
             ),
@@ -503,7 +541,7 @@ class _ObservationSection extends StatelessWidget {
       _ObservationSummaryCard(
         title: 'Terapie farmacologiche',
         countLabel: '5 animali da trattare',
-        summary: 'Antibiotico: 3 · Antinfiammatorio: 2',
+        summary: 'Antibiotico: 3 - Antinfiammatorio: 2',
         accentColor: AppColors.secondary,
         onTap: () => _showObservationDialog(
           context: context,

@@ -7,9 +7,17 @@ class CowVisitPage extends StatefulWidget {
   const CowVisitPage({
     super.key,
     required this.farmId,
+    this.sessionId,
+    this.sessionType,
+    this.cowNumber,
+    this.isEditing = false,
   });
 
   final String farmId;
+  final String? sessionId;
+  final String? sessionType;
+  final String? cowNumber;
+  final bool isEditing;
 
   @override
   State<CowVisitPage> createState() => _CowVisitPageState();
@@ -25,6 +33,12 @@ class _CowVisitPageState extends State<CowVisitPage> {
   bool _antibiotic = false;
   bool _antiInflammatory = false;
   bool _strawBox = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _cowIdController.text = widget.cowNumber ?? '';
+  }
 
   @override
   void dispose() {
@@ -44,10 +58,12 @@ class _CowVisitPageState extends State<CowVisitPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final pageTitle = widget.isEditing ? 'Modifica visita vacca' : 'Nuova visita vacca';
+    final sessionType = widget.sessionType ?? 'Sessione operativa';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Visita Vacca Base'),
+        title: Text(pageTitle),
       ),
       body: SafeArea(
         child: Form(
@@ -59,6 +75,11 @@ class _CowVisitPageState extends State<CowVisitPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(
+                      sessionType,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 8),
                     Text('Dati generici', style: theme.textTheme.titleMedium),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -151,10 +172,12 @@ class _CowVisitPageState extends State<CowVisitPage> {
               ),
               const SizedBox(height: 20),
               AppPrimaryButton(
-                label: 'Salva capo',
+                label: widget.isEditing ? 'Aggiorna capo' : 'Salva capo',
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    _showPlaceholderMessage('Salvataggio capo');
+                    _showPlaceholderMessage(
+                      widget.isEditing ? 'Aggiornamento capo' : 'Salvataggio capo',
+                    );
                   }
                 },
               ),

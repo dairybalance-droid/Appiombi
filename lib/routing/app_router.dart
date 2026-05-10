@@ -37,6 +37,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/farms/:farmId/sessions',
         builder: (context, state) => SessionListPage(
           farmId: state.pathParameters['farmId'] ?? '',
+          farmName: state.uri.queryParameters['farmName'] ?? '',
         ),
       ),
       GoRoute(
@@ -44,12 +45,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => SessionDetailPage(
           farmId: state.pathParameters['farmId'] ?? '',
           sessionId: state.pathParameters['sessionId'] ?? '',
+          sessionType: state.uri.queryParameters['type'] ?? '',
+          farmName: state.uri.queryParameters['farmName'] ?? '',
         ),
       ),
       GoRoute(
         path: '/farms/:farmId/visits/new',
         builder: (context, state) => CowVisitPage(
           farmId: state.pathParameters['farmId'] ?? '',
+          sessionId: state.uri.queryParameters['sessionId'],
+          sessionType: state.uri.queryParameters['sessionType'],
+          cowNumber: state.uri.queryParameters['cowNumber'],
+          isEditing: state.uri.queryParameters['mode'] == 'edit',
         ),
       ),
     ],
