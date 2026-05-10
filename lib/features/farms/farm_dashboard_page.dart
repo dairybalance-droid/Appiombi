@@ -221,94 +221,37 @@ class _FarmHeroCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return AppCard(
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFFFFF5E9),
-              Color(0xFFF2FAFC),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            farm.name,
+            style: theme.textTheme.headlineLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(4),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.agriculture_outlined,
-                          size: 18,
-                          color: AppColors.secondary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Home operativa',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _StatusChip(
-                    label: farm.canWrite ? 'Scrittura attiva' : 'Sola lettura',
-                    color: farm.canWrite ? AppColors.success : AppColors.warning,
-                  ),
-                  if (farm.farmCode.isNotEmpty)
-                    _StatusChip(
-                      label: farm.farmCode,
-                      color: AppColors.secondary,
-                    ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              Text(
-                farm.name,
-                style: theme.textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Indirizzo non impostato',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 18),
-              Text(
-                'Apri rapidamente una nuova sessione di lavoro o consulta le attivita da seguire nei prossimi giorni.',
-                style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 22),
-              AppPrimaryButton(
-                label: 'Nuova sessione',
-                onPressed: onNewSession,
-              ),
-            ],
+          const SizedBox(height: 8),
+          Text(
+            'Indirizzo non impostato',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
-        ),
+          if (farm.farmCode.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              'Codice azienda: ${farm.farmCode}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+          const SizedBox(height: 20),
+          AppPrimaryButton(
+            label: 'Nuova sessione',
+            onPressed: onNewSession,
+          ),
+        ],
       ),
     );
   }
@@ -377,7 +320,7 @@ class _QuickActionCard extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: AppColors.secondary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: AppColors.secondary),
             ),
@@ -428,7 +371,7 @@ class _PreviousVisitsCard extends StatelessWidget {
                 height: 42,
                 decoration: BoxDecoration(
                   color: AppColors.accent.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.history_rounded,
@@ -540,31 +483,31 @@ class _ObservationSection extends StatelessWidget {
         title: 'Terapie farmacologiche',
         subtitle: 'Monitoraggio trattamenti da completare.',
         rows: [
-          ['789', 'Antibiotico', '11 maggio', 'Controllo serale'],
-          ['234', 'Antinfiammatorio', '12 maggio', 'Buona risposta'],
-          ['101', 'Antibiotico + Antinfiammatorio', '13 maggio', 'Valutare zoppia'],
+          ['789', 'Si', 'Controllo serale', 'No'],
+          ['234', 'No', 'Buona risposta', 'Si'],
+          ['101', 'Si', 'Valutare zoppia', 'Si'],
         ],
-        headers: ['Capo', 'Terapia', 'Scadenza', 'Note'],
+        headers: ['Capo', 'Antibiotico', 'Suggerito', 'Antinfiammatorio'],
       ),
       const _ObservationTableCard(
         title: 'Ricontrolli 15/20 giorni',
         subtitle: 'Capi da rivedere nel medio periodo.',
         rows: [
-          ['234', '6 giorni', 'Lesione suola', '30 aprile'],
-          ['101', '9 giorni', 'Ricontrollo postura', '27 aprile'],
-          ['789', '12 giorni', 'Bendaggio recente', '24 aprile'],
+          ['234', 'Posteriore destro', '2', '1'],
+          ['101', 'Anteriore sinistro', '1', '0'],
+          ['789', 'Posteriore sinistro', '2', '1'],
         ],
-        headers: ['Capo', 'Giorni mancanti', 'Motivo', 'Ultima visita'],
+        headers: ['Capo', 'Sede', 'Suole', 'Bende'],
       ),
       const _ObservationTableCard(
         title: 'Togli bende 3/5 giorni',
         subtitle: 'Promemoria rapido per medicazioni in corso.',
         rows: [
-          ['789', '2 giorni', 'Posteriore destro', '08 maggio'],
-          ['234', '3 giorni', 'Anteriore sinistro', '07 maggio'],
-          ['101', '5 giorni', 'Posteriore sinistro', '05 maggio'],
+          ['789', 'Posteriore destro'],
+          ['234', 'Anteriore sinistro'],
+          ['101', 'Posteriore sinistro'],
         ],
-        headers: ['Capo', 'Giorni mancanti', 'Arto', 'Ultima visita'],
+        headers: ['Capo', 'Sede'],
       ),
     ];
 
@@ -580,6 +523,23 @@ class _ObservationSection extends StatelessWidget {
       );
     }
 
+    if (!wideLayout && rowsCanSplit(context)) {
+      return Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: cards[0]),
+              const SizedBox(width: 16),
+              Expanded(child: cards[1]),
+            ],
+          ),
+          const SizedBox(height: 16),
+          cards[2],
+        ],
+      );
+    }
+
     return Column(
       children: [
         for (var i = 0; i < cards.length; i++) ...[
@@ -588,6 +548,10 @@ class _ObservationSection extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  bool rowsCanSplit(BuildContext context) {
+    return MediaQuery.sizeOf(context).width >= 760;
   }
 }
 
@@ -607,6 +571,11 @@ class _ObservationTableCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final widths = <double>[
+      92,
+      for (var i = 1; i < headers.length; i++)
+        headers.length == 2 ? 180 : 140,
+    ];
 
     return AppCard(
       child: Column(
@@ -626,56 +595,72 @@ class _ObservationTableCard extends StatelessWidget {
           const SizedBox(height: 14),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            child: Table(
-              border: TableBorder.all(
-                color: AppColors.border,
-                width: 1,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(8),
               ),
-              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-              columnWidths: const {
-                0: IntrinsicColumnWidth(),
-              },
-              children: [
-                TableRow(
-                  decoration: const BoxDecoration(
-                    color: AppColors.background,
-                  ),
-                  children: [
-                    for (final header in headers)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 10,
-                        ),
-                        child: Text(
-                          header,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                for (final row in rows)
+              clipBehavior: Clip.antiAlias,
+              child: Table(
+                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                columnWidths: {
+                  for (var i = 0; i < widths.length; i++)
+                    i: FixedColumnWidth(widths[i]),
+                },
+                children: [
                   TableRow(
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF0F3F4),
+                    ),
                     children: [
-                      for (final cell in row)
+                      for (final header in headers)
                         Padding(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
+                            horizontal: 12,
                             vertical: 10,
                           ),
                           child: Text(
-                            cell,
+                            header,
+                            textAlign: TextAlign.left,
                             style: theme.textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
                           ),
                         ),
                     ],
                   ),
-              ],
+                  for (var rowIndex = 0; rowIndex < rows.length; rowIndex++)
+                    TableRow(
+                      decoration: BoxDecoration(
+                        color: rowIndex.isEven
+                            ? Colors.white
+                            : const Color(0xFFF9FAFA),
+                      ),
+                      children: [
+                        for (final cell in rows[rowIndex])
+                          Container(
+                            decoration: const BoxDecoration(
+                              border: Border(
+                                top: BorderSide(color: AppColors.border),
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 9,
+                            ),
+                            child: Text(
+                              cell,
+                              textAlign: TextAlign.left,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                ],
+              ),
             ),
           ),
         ],
@@ -725,34 +710,6 @@ class _ChartBar extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _StatusChip extends StatelessWidget {
-  const _StatusChip({
-    required this.label,
-    required this.color,
-  });
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textPrimary,
-            ),
-      ),
     );
   }
 }
