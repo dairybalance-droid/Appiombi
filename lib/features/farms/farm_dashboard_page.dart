@@ -478,36 +478,94 @@ class _ObservationSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const therapyRows = [
+      ['789', 'Si', 'Controllo serale', 'No', '11 maggio', 'Monitorare risposta'],
+      ['234', 'No', 'Buona risposta', 'Si', '12 maggio', 'Ridurre carico'],
+      ['101', 'Si', 'Valutare zoppia', 'Si', '13 maggio', 'Tenere in osservazione'],
+      ['145', 'Si', 'Ricontrollo rapido', 'No', '14 maggio', 'Stalla nord'],
+      ['327', 'No', 'Supporto clinico', 'Si', '15 maggio', 'Buon recupero'],
+    ];
+    const recheckRows = [
+      ['234', 'Posteriore destro', '2', '1', '2 giorni', '30 aprile'],
+      ['101', 'Anteriore sinistro', '1', '0', '5 giorni', '27 aprile'],
+      ['789', 'Posteriore sinistro', '2', '1', '7 giorni', '24 aprile'],
+      ['145', 'Posteriore destro', '1', '1', '9 giorni', '22 aprile'],
+      ['327', 'Anteriore destro', '0', '1', '11 giorni', '20 aprile'],
+    ];
+    const bandageRows = [
+      ['789', 'Posteriore destro', '2 giorni', '08 maggio'],
+      ['234', 'Anteriore sinistro', '3 giorni', '07 maggio'],
+      ['101', 'Posteriore sinistro', '5 giorni', '05 maggio'],
+      ['145', 'Anteriore destro', '3 giorni', '07 maggio'],
+    ];
+
     final cards = [
-      const _ObservationTableCard(
+      _ObservationSummaryCard(
         title: 'Terapie farmacologiche',
-        subtitle: 'Monitoraggio trattamenti da completare.',
-        rows: [
-          ['789', 'Si', 'Controllo serale', 'No'],
-          ['234', 'No', 'Buona risposta', 'Si'],
-          ['101', 'Si', 'Valutare zoppia', 'Si'],
-        ],
-        headers: ['Capo', 'Antibiotico', 'Suggerito', 'Antinfiammatorio'],
+        countLabel: '5 animali da trattare',
+        summary: 'Antibiotico: 3 · Antinfiammatorio: 2',
+        accentColor: AppColors.secondary,
+        onTap: () => _showObservationDialog(
+          context: context,
+          title: 'Terapie farmacologiche',
+          table: const _ObservationTableCard(
+            title: 'Terapie farmacologiche',
+            subtitle: 'Elenco completo dei trattamenti da seguire.',
+            rows: therapyRows,
+            headers: [
+              'Capo',
+              'Antibiotico',
+              'Suggerito',
+              'Antinfiammatorio',
+              'Scadenza',
+              'Note',
+            ],
+          ),
+        ),
       ),
-      const _ObservationTableCard(
+      _ObservationSummaryCard(
         title: 'Ricontrolli 15/20 giorni',
-        subtitle: 'Capi da rivedere nel medio periodo.',
-        rows: [
-          ['234', 'Posteriore destro', '2', '1'],
-          ['101', 'Anteriore sinistro', '1', '0'],
-          ['789', 'Posteriore sinistro', '2', '1'],
-        ],
-        headers: ['Capo', 'Sede', 'Suole', 'Bende'],
+        countLabel: '5 animali da rivedere',
+        summary: 'Prossimo: capo 234 tra 2 giorni',
+        accentColor: AppColors.accent,
+        onTap: () => _showObservationDialog(
+          context: context,
+          title: 'Ricontrolli 15/20 giorni',
+          table: const _ObservationTableCard(
+            title: 'Ricontrolli 15/20 giorni',
+            subtitle: 'Elenco completo dei ricontrolli programmati.',
+            rows: recheckRows,
+            headers: [
+              'Capo',
+              'Sede',
+              'Suole',
+              'Bende',
+              'Giorni mancanti',
+              'Ultima visita',
+            ],
+          ),
+        ),
       ),
-      const _ObservationTableCard(
+      _ObservationSummaryCard(
         title: 'Togli bende 3/5 giorni',
-        subtitle: 'Promemoria rapido per medicazioni in corso.',
-        rows: [
-          ['789', 'Posteriore destro'],
-          ['234', 'Anteriore sinistro'],
-          ['101', 'Posteriore sinistro'],
-        ],
-        headers: ['Capo', 'Sede'],
+        countLabel: '4 bendaggi da rimuovere',
+        summary: 'Piu urgente: capo 789',
+        accentColor: AppColors.success,
+        onTap: () => _showObservationDialog(
+          context: context,
+          title: 'Togli bende 3/5 giorni',
+          table: const _ObservationTableCard(
+            title: 'Togli bende 3/5 giorni',
+            subtitle: 'Elenco completo dei bendaggi da rimuovere.',
+            rows: bandageRows,
+            headers: [
+              'Capo',
+              'Sede',
+              'Giorni mancanti',
+              'Ultima visita',
+            ],
+          ),
+        ),
       ),
     ];
 
@@ -523,23 +581,6 @@ class _ObservationSection extends StatelessWidget {
       );
     }
 
-    if (!wideLayout && rowsCanSplit(context)) {
-      return Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: cards[0]),
-              const SizedBox(width: 16),
-              Expanded(child: cards[1]),
-            ],
-          ),
-          const SizedBox(height: 16),
-          cards[2],
-        ],
-      );
-    }
-
     return Column(
       children: [
         for (var i = 0; i < cards.length; i++) ...[
@@ -548,10 +589,6 @@ class _ObservationSection extends StatelessWidget {
         ],
       ],
     );
-  }
-
-  bool rowsCanSplit(BuildContext context) {
-    return MediaQuery.sizeOf(context).width >= 760;
   }
 }
 
@@ -669,6 +706,75 @@ class _ObservationTableCard extends StatelessWidget {
   }
 }
 
+class _ObservationSummaryCard extends StatelessWidget {
+  const _ObservationSummaryCard({
+    required this.title,
+    required this.countLabel,
+    required this.summary,
+    required this.accentColor,
+    required this.onTap,
+  });
+
+  final String title;
+  final String countLabel;
+  final String summary;
+  final Color accentColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return AppCard(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: accentColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              Icons.table_rows_rounded,
+              color: accentColor,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            countLabel,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            summary,
+            style: theme.textTheme.bodySmall,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Apri elenco',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ChartBar extends StatelessWidget {
   const _ChartBar({required this.bar});
 
@@ -724,6 +830,55 @@ class _ChartBarData {
   final String label;
   final double value;
   final Color color;
+}
+
+Future<void> _showObservationDialog({
+  required BuildContext context,
+  required String title,
+  required Widget table,
+}) async {
+  await showDialog<void>(
+    context: context,
+    builder: (dialogContext) {
+      return Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 1080,
+            maxHeight: 760,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: table,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 String _formatItalianDate(DateTime date) {
