@@ -53,11 +53,18 @@ alter type public.session_status add value if not exists 'reopened';
 
 alter table public.trimming_sessions
   add column if not exists session_type public.trimming_session_type,
+  add column if not exists is_session_modifiable boolean not null default true,
   add column if not exists reopened_at timestamptz;
 
 update public.trimming_sessions
 set session_type = 'herd_trim'
 where session_type is null;
+
+update public.trimming_sessions
+set is_session_modifiable = case
+  when deleted_at is null and status::text in ('open', 'reopened') then true
+  else false
+end;
 
 alter table public.trimming_sessions
   alter column session_type set default 'herd_trim';
@@ -71,11 +78,18 @@ comment on column public.trimming_sessions.session_type is
 comment on column public.trimming_sessions.reopened_at is
 'Timestamp of the most recent reopen action for the session.';
 
+comment on column public.trimming_sessions.is_session_modifiable is
+'Materialized helper for unique-index safety: true only for the currently modifiable session states.';
+
 create or replace function public.normalize_trimming_session_core()
 returns trigger
 language plpgsql
 as $$
 begin
+  new.is_session_modifiable =
+    new.deleted_at is null
+    and new.status::text in ('open', 'reopened');
+
   if new.status::text = 'closed' and new.closed_at is null then
     new.closed_at = timezone('utc', now());
   end if;
@@ -98,7 +112,7 @@ for each row execute function public.normalize_trimming_session_core();
 create unique index if not exists uq_trimming_sessions_one_modifiable_per_farm
 on public.trimming_sessions (farm_id)
 where deleted_at is null
-  and status::text in ('open', 'reopened');
+  and is_session_modifiable = true;
 
 create index if not exists idx_trimming_sessions_farm_type_status_started
 on public.trimming_sessions (farm_id, session_type, status, started_at desc);
@@ -306,7 +320,6 @@ for each row execute function public.normalize_cow_visit_core();
 create unique index if not exists uq_cow_visits_session_cow_number_active
 on public.cow_visits (session_id, cow_number)
 where deleted_at is null
-  and status <> 'deleted'
   and cow_number is not null;
 
 create index if not exists idx_cow_visits_farm_cow_number_visit_date
