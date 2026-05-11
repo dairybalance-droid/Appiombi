@@ -64,6 +64,7 @@ class SessionVisitRow {
   const SessionVisitRow({
     required this.id,
     required this.cowNumber,
+    required this.visitDate,
     required this.worstLesion,
     required this.medicationsLabel,
     required this.solesCount,
@@ -72,6 +73,7 @@ class SessionVisitRow {
 
   final String id;
   final int cowNumber;
+  final DateTime visitDate;
   final String worstLesion;
   final String medicationsLabel;
   final int solesCount;
@@ -605,7 +607,7 @@ class SupabaseService {
       future: _client!
           .from('active_cow_visits')
           .select(
-            'id, cow_number, soles_count, bandages_count, antibiotic_code, anti_inflammatory_code',
+            'id, cow_number, visit_date, soles_count, bandages_count, antibiotic_code, anti_inflammatory_code',
           )
           .eq('session_id', sessionId)
           .order('insertion_index'),
@@ -622,6 +624,7 @@ class SupabaseService {
       return SessionVisitRow(
         id: row['id'] as String,
         cowNumber: _toInt(row['cow_number']),
+        visitDate: DateTime.parse(row['visit_date'] as String).toLocal(),
         worstLesion: '',
         medicationsLabel: _buildMedicationLabel(
           antibioticCode: antibioticCode,

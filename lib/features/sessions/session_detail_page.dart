@@ -309,6 +309,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
           final sessionTypeLabel =
               session.sessionTypeLabel.isEmpty ? fallbackType : session.sessionTypeLabel;
           final farmName = fallbackFarmName;
+          final allVisits = data.visits;
           final visits = data.visits
               .where(
                 (visit) => _searchQuery.isEmpty
@@ -316,6 +317,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                     : visit.cowNumber.toString().contains(_searchQuery),
               )
               .toList();
+          final summary = _SessionSummaryMetrics.fromVisits(allVisits);
 
           return Stack(
             children: [
@@ -355,6 +357,8 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        _SessionCounters(metrics: summary),
+                        const SizedBox(height: 18),
                         Text(
                           'Capi registrati nella sessione',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -386,18 +390,27 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                               decoration: BoxDecoration(
                                 border: Border.all(color: AppColors.border),
                                 borderRadius: BorderRadius.circular(8),
+                                color: Colors.white,
                               ),
                               clipBehavior: Clip.antiAlias,
                               child: Table(
+                                border: TableBorder(
+                                  horizontalInside: const BorderSide(
+                                    color: AppColors.border,
+                                  ),
+                                  verticalInside: const BorderSide(
+                                    color: AppColors.border,
+                                  ),
+                                ),
                                 defaultVerticalAlignment:
                                     TableCellVerticalAlignment.middle,
                                 columnWidths: const {
-                                  0: FixedColumnWidth(62),
-                                  1: FixedColumnWidth(92),
-                                  2: FixedColumnWidth(180),
-                                  3: FixedColumnWidth(120),
-                                  4: FixedColumnWidth(80),
-                                  5: FixedColumnWidth(80),
+                                  0: FixedColumnWidth(64),
+                                  1: FixedColumnWidth(96),
+                                  2: FixedColumnWidth(240),
+                                  3: FixedColumnWidth(130),
+                                  4: FixedColumnWidth(82),
+                                  5: FixedColumnWidth(82),
                                 },
                                 children: [
                                   TableRow(
@@ -407,7 +420,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                                     children: const [
                                       _TableHeaderCell('Mod.'),
                                       _TableHeaderCell('N. Capo'),
-                                      _TableHeaderCell('Lesione piu grave'),
+                                      _TableHeaderCell('Lesione più grave'),
                                       _TableHeaderCell('Farmaci'),
                                       _TableHeaderCell('Suole'),
                                       _TableHeaderCell('Bende'),
@@ -472,6 +485,126 @@ class _SessionDetailData {
   final List<SessionVisitRow> visits;
 }
 
+class _SessionSummaryMetrics {
+  const _SessionSummaryMetrics({
+    required this.totalCows,
+    required this.todayCows,
+    required this.totalSoles,
+    required this.totalBandages,
+  });
+
+  final int totalCows;
+  final int todayCows;
+  final int totalSoles;
+  final int totalBandages;
+
+  factory _SessionSummaryMetrics.fromVisits(List<SessionVisitRow> visits) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    var todayCows = 0;
+    var totalSoles = 0;
+    var totalBandages = 0;
+
+    for (final visit in visits) {
+      final visitDay = DateTime(
+        visit.visitDate.year,
+        visit.visitDate.month,
+        visit.visitDate.day,
+      );
+      if (visitDay == today) {
+        todayCows += 1;
+      }
+      totalSoles += visit.solesCount;
+      totalBandages += visit.bandagesCount;
+    }
+
+    return _SessionSummaryMetrics(
+      totalCows: visits.length,
+      todayCows: todayCows,
+      totalSoles: totalSoles,
+      totalBandages: totalBandages,
+    );
+  }
+}
+
+class _SessionCounters extends StatelessWidget {
+  const _SessionCounters({required this.metrics});
+
+  final _SessionSummaryMetrics metrics;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        _SessionCounterTile(
+          label: 'Capi sessione',
+          value: metrics.totalCows.toString(),
+        ),
+        _SessionCounterTile(
+          label: 'Capi oggi',
+          value: metrics.todayCows.toString(),
+        ),
+        _SessionCounterTile(
+          label: 'Suole totali',
+          value: metrics.totalSoles.toString(),
+        ),
+        _SessionCounterTile(
+          label: 'Bende totali',
+          value: metrics.totalBandages.toString(),
+        ),
+      ],
+    );
+  }
+}
+
+class _SessionCounterTile extends StatelessWidget {
+  const _SessionCounterTile({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 150, maxWidth: 180),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7F9F9),
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _TableHeaderCell extends StatelessWidget {
   const _TableHeaderCell(this.label);
 
@@ -480,7 +613,7 @@ class _TableHeaderCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       child: Text(
         label,
         textAlign: TextAlign.left,
@@ -501,18 +634,16 @@ class _TableValueCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: AppColors.border),
-        ),
-      ),
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-      child: Text(
-        value,
-        style: const TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 13,
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          value,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 13,
+          ),
         ),
       ),
     );
@@ -526,16 +657,14 @@ class _TableCheckCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: AppColors.border),
-        ),
-      ),
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-      child: value
-          ? const Icon(Icons.check_rounded, size: 18, color: AppColors.success)
-          : const SizedBox.shrink(),
+      child: Align(
+        alignment: Alignment.center,
+        child: value
+            ? const Icon(Icons.check_rounded, size: 18, color: AppColors.success)
+            : const SizedBox.shrink(),
+      ),
     );
   }
 }
@@ -547,12 +676,7 @@ class _TableEditCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: AppColors.border),
-        ),
-      ),
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       child: IconButton(
         tooltip: 'Modifica capo',
