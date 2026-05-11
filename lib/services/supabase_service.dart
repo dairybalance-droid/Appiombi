@@ -392,11 +392,12 @@ class SupabaseService {
     );
 
     final existingRows = await _withTimeout<List<dynamic>>(
-      label: 'active_trimming_sessions.select_open_or_reopened',
+      label: 'trimming_sessions.select_open_or_reopened',
       future: _client!
-          .from('active_trimming_sessions')
+          .from('trimming_sessions')
           .select('id, farm_id, session_type, status, started_at, closed_at, reopened_at')
           .eq('farm_id', farmId)
+          .isFilter('deleted_at', null)
           .inFilter('status', const ['open', 'reopened'])
           .order('started_at', ascending: false)
           .limit(1),
@@ -431,11 +432,12 @@ class SupabaseService {
           '[Appiombi][Sessions] Unique modifiable session constraint hit, re-querying existing session.',
         );
         final fallbackRows = await _withTimeout<List<dynamic>>(
-          label: 'active_trimming_sessions.select_after_conflict',
+          label: 'trimming_sessions.select_after_conflict',
           future: _client!
-              .from('active_trimming_sessions')
+              .from('trimming_sessions')
               .select('id, farm_id, session_type, status, started_at, closed_at, reopened_at')
               .eq('farm_id', farmId)
+              .isFilter('deleted_at', null)
               .inFilter('status', const ['open', 'reopened'])
               .order('started_at', ascending: false)
               .limit(1),
@@ -455,11 +457,12 @@ class SupabaseService {
     }
 
     final rows = await _withTimeout<List<dynamic>>(
-      label: 'active_trimming_sessions.select_latest_for_farm',
+      label: 'trimming_sessions.select_latest_for_farm',
       future: _client!
-          .from('active_trimming_sessions')
+          .from('trimming_sessions')
           .select('id, farm_id, session_type, status, started_at, closed_at, reopened_at')
           .eq('farm_id', farmId)
+          .isFilter('deleted_at', null)
           .order('started_at', ascending: false)
           .limit(1),
     );
@@ -510,11 +513,12 @@ class SupabaseService {
 
     debugPrint('[Appiombi][Sessions] Fetch sessions history for farmId=$farmId');
     final sessionRows = await _withTimeout<List<dynamic>>(
-      label: 'active_trimming_sessions.select_history',
+      label: 'trimming_sessions.select_history',
       future: _client!
-          .from('active_trimming_sessions')
+          .from('trimming_sessions')
           .select('id, farm_id, session_type, status, started_at, closed_at, reopened_at')
           .eq('farm_id', farmId)
+          .isFilter('deleted_at', null)
           .order('started_at', ascending: false),
     );
 
@@ -574,11 +578,12 @@ class SupabaseService {
 
     debugPrint('[Appiombi][Sessions] Fetch session detail sessionId=$sessionId');
     final rows = await _withTimeout<List<dynamic>>(
-      label: 'active_trimming_sessions.select_by_id',
+      label: 'trimming_sessions.select_by_id',
       future: _client!
-          .from('active_trimming_sessions')
+          .from('trimming_sessions')
           .select('id, farm_id, session_type, status, started_at, closed_at, reopened_at')
           .eq('id', sessionId)
+          .isFilter('deleted_at', null)
           .limit(1),
     );
 

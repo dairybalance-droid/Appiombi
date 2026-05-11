@@ -391,12 +391,6 @@ class _QuickActionsRow extends StatelessWidget {
             '/farms/$farmId/sessions?farmName=${Uri.encodeComponent(farmName)}',
           ),
         ),
-        _QuickActionCard(
-          icon: Icons.edit_note_rounded,
-          title: 'Visita vacca base',
-          subtitle: 'Apri la compilazione base per una visita singola.',
-          onTap: () => context.go('/farms/$farmId/visits/new'),
-        ),
       ],
     );
   }
