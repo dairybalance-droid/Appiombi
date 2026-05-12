@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
 class AppLogoPlaceholder extends StatelessWidget {
-  const AppLogoPlaceholder({super.key});
+  const AppLogoPlaceholder({
+    super.key,
+    this.compact = false,
+  });
+
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -12,8 +17,8 @@ class AppLogoPlaceholder extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: 92,
-          height: 92,
+          width: compact ? 76 : 92,
+          height: compact ? 76 : 92,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: const LinearGradient(
@@ -28,16 +33,16 @@ class AppLogoPlaceholder extends StatelessWidget {
             ],
           ),
           alignment: Alignment.center,
-          child: const Icon(
+          child: Icon(
             Icons.balance_rounded,
             color: Colors.white,
-            size: 42,
+            size: compact ? 34 : 42,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: compact ? 12 : 16),
         Text(
           'Appiombi',
-          style: theme.textTheme.headlineMedium,
+          style: compact ? theme.textTheme.headlineSmall : theme.textTheme.headlineMedium,
         ),
         const SizedBox(height: 4),
         Text(

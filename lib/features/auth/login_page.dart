@@ -123,126 +123,170 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final config = ref.watch(appConfigProvider);
+    final viewInsetsBottom = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 16),
-                  const AppLogoPlaceholder(),
-                  const SizedBox(height: 32),
-                  Text(
-                    'Login',
-                    style: theme.textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'App mobile nativa per la gestione delle sessioni podali in stalla.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  if (!config.isSupabaseConfigured)
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.warning),
-                      ),
-                      child: Text(
-                        'Configurazione Supabase ancora placeholder. Il pulsante Login apre lo scheletro navigabile per la UI MVP.',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  if (config.devBypassLogin)
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.secondary),
-                      ),
-                      child: Text(
-                        'Dev bypass attivo. Questa schermata e\' bypassata automaticamente nello sviluppo locale.',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  Form(
-                    key: _formKey,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isPhone = constraints.maxWidth < 520;
+            final horizontalPadding = isPhone ? 20.0 : 24.0;
+            final verticalPadding = isPhone ? 16.0 : 24.0;
+
+            return SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                verticalPadding,
+                horizontalPadding,
+                viewInsetsBottom + verticalPadding,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - (verticalPadding * 2),
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        TextFormField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            hintText: 'allevatore.test@appiombi.local',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Inserisci una email.';
-                            }
-                            if (!value.contains('@')) {
-                              return 'Inserisci una email valida.';
-                            }
-                            return null;
-                          },
+                        AppLogoPlaceholder(compact: isPhone),
+                        SizedBox(height: isPhone ? 24 : 32),
+                        Text(
+                          'Login',
+                          style: isPhone
+                              ? theme.textTheme.headlineSmall
+                              : theme.textTheme.headlineMedium,
                         ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Password',
+                        const SizedBox(height: 8),
+                        Text(
+                          'App mobile nativa per la gestione delle sessioni podali in stalla.',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Inserisci la password.';
-                            }
-                            return null;
-                          },
+                        ),
+                        SizedBox(height: isPhone ? 20 : 24),
+                        if (!config.isSupabaseConfigured)
+                          _LoginInfoBanner(
+                            color: AppColors.warning,
+                            backgroundColor: AppColors.warning.withValues(alpha: 0.12),
+                            message:
+                                'Configurazione Supabase ancora placeholder. Il pulsante Login apre lo scheletro navigabile per la UI MVP.',
+                          ),
+                        if (config.devBypassLogin)
+                          _LoginInfoBanner(
+                            color: AppColors.secondary,
+                            backgroundColor: AppColors.secondary.withValues(alpha: 0.12),
+                            message:
+                                'Dev bypass attivo. Questa schermata e\' bypassata automaticamente nello sviluppo locale.',
+                          ),
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
+                                autofillHints: const [AutofillHints.username],
+                                decoration: const InputDecoration(
+                                  isDense: true,
+                                  labelText: 'Email',
+                                  hintText: 'allevatore.test@appiombi.local',
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Inserisci una email.';
+                                  }
+                                  if (!value.contains('@')) {
+                                    return 'Inserisci una email valida.';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 14),
+                              TextFormField(
+                                controller: _passwordController,
+                                obscureText: true,
+                                textInputAction: TextInputAction.done,
+                                autofillHints: const [AutofillHints.password],
+                                onFieldSubmitted: (_) => _isSubmitting ? null : _submit(),
+                                decoration: const InputDecoration(
+                                  isDense: true,
+                                  labelText: 'Password',
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Inserisci la password.';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_errorText != null) ...[
+                          const SizedBox(height: 14),
+                          Text(
+                            _errorText!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: AppColors.danger,
+                            ),
+                          ),
+                        ],
+                        SizedBox(height: isPhone ? 20 : 24),
+                        AppPrimaryButton(
+                          label: _isSubmitting ? 'Accesso in corso...' : 'Login',
+                          onPressed: _isSubmitting ? null : _submit,
+                        ),
+                        const SizedBox(height: 18),
+                        Text(
+                          'Appiombi by Dairy Balance',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodySmall,
                         ),
                       ],
                     ),
                   ),
-                  if (_errorText != null) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      _errorText!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppColors.danger,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-                  AppPrimaryButton(
-                    label: _isSubmitting ? 'Accesso in corso...' : 'Login',
-                    onPressed: _isSubmitting ? null : _submit,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Appiombi by Dairy Balance',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _LoginInfoBanner extends StatelessWidget {
+  const _LoginInfoBanner({
+    required this.color,
+    required this.backgroundColor,
+    required this.message,
+  });
+
+  final Color color;
+  final Color backgroundColor;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color),
+      ),
+      child: Text(
+        message,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: AppColors.textPrimary,
         ),
       ),
     );
