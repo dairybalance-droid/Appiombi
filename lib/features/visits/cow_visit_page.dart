@@ -1,6 +1,7 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -144,22 +145,38 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
 
   Future<void> _editCowNumberFromTopBar() async {
     final controller = TextEditingController(text: _cowNumberController.text.trim());
+    final focusNode = FocusNode();
     String? inlineError;
     bool saving = false;
     final previousValue = _cowNumberController.text.trim();
 
-    final updatedValue = await showDialog<String?>(
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      focusNode.requestFocus();
+      _selectAllText(controller);
+    });
+
+    final updated = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            void focusAndSelectAll() {
+              focusNode.requestFocus();
+              _selectAllText(controller);
+            }
+
             Future<void> submit() async {
+              final navigator = Navigator.of(dialogContext);
               final rawValue = controller.text.trim();
               if (!RegExp(r'^-?\d+$').hasMatch(rawValue)) {
                 setDialogState(() {
                   inlineError = 'Inserisci un numero intero valido.';
                 });
+                focusAndSelectAll();
                 return;
               }
 
@@ -167,31 +184,99 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                 inlineError = null;
                 saving = true;
               });
-              Navigator.of(dialogContext).pop(rawValue);
+
+              _cowNumberController.text = rawValue;
+              setState(() {
+                _cowNumberError = null;
+              });
+
+              final saved = await _saveCurrentVisit();
+              if (!mounted) {
+                return;
+              }
+
+              if (!saved) {
+                _cowNumberController.text = previousValue;
+                setDialogState(() {
+                  inlineError = _cowNumberError ?? 'Capo già presente.';
+                  saving = false;
+                });
+                focusAndSelectAll();
+                return;
+              }
+
+              navigator.pop(true);
             }
 
             return AlertDialog(
               title: const Text('Modifica numero capo'),
-              content: TextField(
-                controller: controller,
-                autofocus: true,
-                enabled: !saving,
-                keyboardType: const TextInputType.numberWithOptions(
-                  signed: true,
-                  decimal: false,
+              content: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 320),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            autofocus: true,
+                            enabled: !saving,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              signed: true,
+                              decimal: false,
+                            ),
+                            textInputAction: TextInputAction.done,
+                            inputFormatters: const [_SignedIntegerTextInputFormatter()],
+                            decoration: InputDecoration(
+                              isDense: true,
+                              labelText: 'Capo',
+                              hintText: 'Es. 101 o -12',
+                              errorText: inlineError,
+                            ),
+                            onTap: () => _selectAllText(controller),
+                            onChanged: (_) {
+                              if (inlineError != null) {
+                                setDialogState(() => inlineError = null);
+                              }
+                            },
+                            onSubmitted: (_) => submit(),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: OutlinedButton(
+                            onPressed: saving
+                                ? null
+                                : () {
+                                    _toggleNegativePrefix(controller);
+                                    focusAndSelectAll();
+                                  },
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                            ),
+                            child: const Text(
+                              '-',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                decoration: InputDecoration(
-                  labelText: 'Capo',
-                  hintText: 'Es. 101 o -12',
-                  errorText: inlineError,
-                ),
-                onSubmitted: (_) => submit(),
               ),
               actions: [
                 TextButton(
                   onPressed: saving
                       ? null
-                      : () => Navigator.of(dialogContext).pop(null),
+                      : () => Navigator.of(dialogContext).pop(false),
                   child: const Text('Annulla'),
                 ),
                 ElevatedButton(
@@ -205,26 +290,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
       },
     );
 
-    if (!mounted || updatedValue == null || updatedValue == previousValue) {
+    if (!mounted || updated != true || controller.text.trim() == previousValue) {
       return;
     }
-
-    _cowNumberController.text = updatedValue;
-    setState(() {
-      _cowNumberError = null;
-    });
-
-    final saved = await _saveCurrentVisit();
-    if (!mounted) {
-      return;
-    }
-
-    if (!saved) {
-      _cowNumberController.text = previousValue;
-      setState(() {});
-      return;
-    }
-
     setState(() {});
   }
 
@@ -476,13 +544,22 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     }
 
     final controller = TextEditingController();
+    final focusNode = FocusNode();
     String? inlineError;
     bool submitting = false;
+
+    void requestFocusAndSelectAll() {
+      focusNode.requestFocus();
+      _selectAllText(controller);
+    }
 
     return showDialog<_NewVisitNavigationResult?>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          requestFocusAndSelectAll();
+        });
         return StatefulBuilder(
           builder: (context, setDialogState) {
             Future<void> submit() async {
@@ -492,6 +569,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                 setDialogState(() {
                   inlineError = 'Inserisci un numero intero valido.';
                 });
+                requestFocusAndSelectAll();
                 return;
               }
 
@@ -521,35 +599,89 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                   inlineError = 'Capo già presente.';
                   submitting = false;
                 });
+                requestFocusAndSelectAll();
               } catch (error) {
                 setDialogState(() {
                   inlineError = 'Errore creazione visita: $error';
                   submitting = false;
                 });
+                requestFocusAndSelectAll();
               }
             }
 
             return AlertDialog(
               title: const Text('Nuova visita vacca'),
-              content: TextField(
-                controller: controller,
-                autofocus: true,
-                enabled: !submitting,
-                keyboardType: const TextInputType.numberWithOptions(
-                  signed: true,
-                  decimal: false,
+              content: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 320),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            autofocus: true,
+                            enabled: !submitting,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              signed: true,
+                              decimal: false,
+                            ),
+                            textInputAction: TextInputAction.done,
+                            inputFormatters: const [_SignedIntegerTextInputFormatter()],
+                            decoration: InputDecoration(
+                              isDense: true,
+                              labelText: 'Numero capo',
+                              hintText: 'Es. 101 o -12',
+                              errorText: inlineError,
+                            ),
+                            onTap: () => _selectAllText(controller),
+                            onChanged: (_) {
+                              if (inlineError != null) {
+                                setDialogState(() => inlineError = null);
+                              }
+                            },
+                            onSubmitted: (_) => submit(),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: OutlinedButton(
+                            onPressed: submitting
+                                ? null
+                                : () {
+                                    _toggleNegativePrefix(controller);
+                                    requestFocusAndSelectAll();
+                                  },
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                            ),
+                            child: const Text(
+                              '-',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Accetta interi positivi o negativi.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                      ),
+                    ),
+                  ],
                 ),
-                decoration: InputDecoration(
-                  labelText: 'Numero capo',
-                  hintText: 'Es. 101 o -12',
-                  errorText: inlineError,
-                  suffixIcon: IconButton(
-                    onPressed: null,
-                    icon: const Icon(Icons.mic_none_rounded),
-                    tooltip: 'Microfono non disponibile',
-                  ),
-                ),
-                onSubmitted: (_) => submit(),
               ),
               actions: [
                 TextButton(
@@ -757,124 +889,113 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     );
   }
 
+  void _selectAllText(TextEditingController controller) {
+    controller.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: controller.text.length,
+    );
+  }
+
+  void _toggleNegativePrefix(TextEditingController controller) {
+    final current = controller.text;
+    final nextValue = current.startsWith('-')
+        ? current.substring(1)
+        : '-$current';
+    controller.value = TextEditingValue(
+      text: nextValue,
+      selection: TextSelection.collapsed(offset: nextValue.length),
+    );
+  }
+
   Widget _buildBottomBar(_CowVisitPageData data) {
-    switch (_currentSection) {
-      case _VisitSection.generalData:
-        return SafeArea(
-          top: false,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                top: BorderSide(color: AppColors.border),
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _saving ? null : () => _openPreviousVisit(data),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    label: const Text('Precedente'),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _saving ? null : _saveAndReturnToList,
-                    child: const Text('Elenco'),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _saving ? null : _confirmDelete,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.danger,
-                    ),
-                    child: const Text('Elimina'),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _saving ? null : _openNewCowFromRightAction,
-                    icon: const Icon(Icons.arrow_forward_rounded),
-                    label: const Text('Prossima vacca'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      case _VisitSection.hoofMap:
-        return _MapBottomBar(
-          onNextCow: _savingMap ? null : _openNewCowFromRightAction,
-          busy: _savingMap || _saving,
-        );
-      case _VisitSection.otherInfo:
-        return _MapBottomBar(
-          onNextCow: _saving ? null : _openNewCowFromRightAction,
-          busy: _saving,
-        );
-    }
+    return _VisitBottomBar(
+      busy: _saving || _savingMap,
+      onPreviousCow: () => _openPreviousVisit(data),
+      onList: _saveAndReturnToList,
+      onDelete: _confirmDelete,
+      onNextCow: _openNewCowFromRightAction,
+    );
   }
 
   Widget _buildVisitTopBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          _TopBarIconButton(
-            icon: Icons.arrow_back_ios_new_rounded,
-            onTap: _saving ? null : _navigateCycleBackward,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isPhone = constraints.maxWidth < 520;
+        return Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: isPhone ? 8 : 12,
+            vertical: isPhone ? 8 : 10,
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _TopBarValueChip(
-              label: _formatDate(_visitDate ?? DateTime.now()),
-              icon: Icons.calendar_today_rounded,
-              onTap: _saving ? null : _editVisitDateFromTopBar,
-            ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(8),
           ),
-          const SizedBox(width: 8),
-          _TopBarIconButton(
-            icon: Icons.mic_none_rounded,
-            onTap: _showVoiceInfo,
+          child: Row(
+            children: [
+              _TopBarIconButton(
+                icon: Icons.chevron_left_rounded,
+                compact: isPhone,
+                onTap: _saving ? null : _navigateCycleBackward,
+              ),
+              SizedBox(width: isPhone ? 4 : 8),
+              Expanded(
+                flex: 3,
+                child: _TopBarValueChip(
+                  label: _formatDate(_visitDate ?? DateTime.now()),
+                  icon: Icons.calendar_today_rounded,
+                  compact: isPhone,
+                  onTap: _saving ? null : _editVisitDateFromTopBar,
+                ),
+              ),
+              SizedBox(width: isPhone ? 4 : 8),
+              _TopBarIconButton(
+                icon: Icons.mic_none_rounded,
+                compact: isPhone,
+                onTap: _showVoiceInfo,
+              ),
+              SizedBox(width: isPhone ? 4 : 8),
+              Expanded(
+                flex: 4,
+                child: _TopBarValueChip(
+                  label: _cowNumberController.text.trim().isEmpty
+                      ? 'Capo -'
+                      : 'Capo ${_cowNumberController.text.trim()}',
+                  icon: Icons.tag_rounded,
+                  compact: isPhone,
+                  emphasized: true,
+                  errorText: _cowNumberError,
+                  onTap: _saving ? null : _editCowNumberFromTopBar,
+                ),
+              ),
+              SizedBox(width: isPhone ? 4 : 8),
+              _TopBarIconButton(
+                icon: Icons.chevron_right_rounded,
+                compact: isPhone,
+                onTap: _saving ? null : _navigateCycleForward,
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _TopBarValueChip(
-              label: _cowNumberController.text.trim().isEmpty
-                  ? 'Capo'
-                  : 'Capo ${_cowNumberController.text.trim()}',
-              icon: Icons.pets_outlined,
-              errorText: _cowNumberError,
-              onTap: _saving ? null : _editCowNumberFromTopBar,
-            ),
-          ),
-          const SizedBox(width: 8),
-          _TopBarIconButton(
-            icon: Icons.arrow_forward_ios_rounded,
-            onTap: _saving ? null : _navigateCycleForward,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildGeneralDataSection(String sessionType) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isPhone = constraints.maxWidth < 520;
+        final fieldGap = isPhone ? 10.0 : 14.0;
+        return ListView(
+          padding: EdgeInsets.fromLTRB(
+            isPhone ? 12 : 20,
+            isPhone ? 12 : 20,
+            isPhone ? 12 : 20,
+            isPhone ? 20 : 20,
+          ),
       children: [
         _buildVisitTopBar(),
-        const SizedBox(height: 12),
+        SizedBox(height: isPhone ? 8 : 12),
         Text(
           sessionType,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -882,7 +1003,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                 color: AppColors.textSecondary,
               ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: isPhone ? 10 : 16),
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -893,56 +1014,25 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                       fontWeight: FontWeight.w700,
                     ),
               ),
-              const SizedBox(height: 16),
-              _DateField(
-                label: 'Data visita',
-                value: _formatDate(_visitDate ?? DateTime.now()),
-                onTap: _selectVisitDate,
-              ),
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: _cowNumberController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  signed: true,
-                  decimal: false,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Capo',
-                  errorText: _cowNumberError,
-                ),
-                onChanged: (_) {
-                  if (_cowNumberError != null) {
-                    setState(() => _cowNumberError = null);
-                  }
-                },
-                validator: (value) {
-                  final rawValue = value?.trim() ?? '';
-                  if (rawValue.isEmpty) {
-                    return 'Capo obbligatorio.';
-                  }
-                  if (!RegExp(r'^-?\d+$').hasMatch(rawValue)) {
-                    return 'Inserisci un numero intero valido.';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
+              SizedBox(height: isPhone ? 10 : 16),
               TextFormField(
                 controller: _groupController,
                 decoration: const InputDecoration(
+                  isDense: true,
                   labelText: 'Gruppo',
                 ),
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: fieldGap),
               _AppDropdownField<String>(
                 label: 'Laminite',
                 value: _laminitisCode,
                 items: _laminitisOptions,
-                onChanged: (value) {
-                  setState(() => _laminitisCode = value ?? '');
-                },
-              ),
-              const SizedBox(height: 14),
+                    onChanged: (value) {
+                      setState(() => _laminitisCode = value ?? '');
+                    },
+                    compact: isPhone,
+                  ),
+              SizedBox(height: fieldGap),
               _AppDropdownField<int?>(
                 label: 'Cavatappi',
                 value: _corkscrewCode,
@@ -950,14 +1040,16 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                 onChanged: (value) {
                   setState(() => _corkscrewCode = value);
                 },
+                compact: isPhone,
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: fieldGap),
               Row(
                 children: [
                   Expanded(
                     child: _CounterField(
                       label: 'Suole',
                       value: _solesCount,
+                      compact: isPhone,
                       onIncrement: () => setState(() => _solesCount += 1),
                       onDecrement: () {
                         setState(() {
@@ -973,6 +1065,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                     child: _CounterField(
                       label: 'Bende',
                       value: _bandagesCount,
+                      compact: isPhone,
                       onIncrement: () => setState(() => _bandagesCount += 1),
                       onDecrement: () {
                         setState(() {
@@ -985,7 +1078,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: fieldGap),
               _AppDropdownField<String>(
                 label: 'Antibiotico',
                 value: _antibioticCode,
@@ -993,8 +1086,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                 onChanged: (value) {
                   setState(() => _antibioticCode = value ?? '');
                 },
+                compact: isPhone,
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: fieldGap),
               _AppDropdownField<String>(
                 label: 'Antinfiammatorio',
                 value: _antiInflammatoryCode,
@@ -1002,8 +1096,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                 onChanged: (value) {
                   setState(() => _antiInflammatoryCode = value ?? '');
                 },
+                compact: isPhone,
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: fieldGap),
               _AppDropdownField<String>(
                 label: 'Ricontrollo',
                 value: _recheckCode,
@@ -1011,13 +1106,15 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                 onChanged: (value) {
                   setState(() => _recheckCode = value ?? '');
                 },
+                compact: isPhone,
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: fieldGap),
               TextFormField(
                 controller: _notesController,
-                minLines: 4,
-                maxLines: 6,
+                minLines: isPhone ? 3 : 4,
+                maxLines: isPhone ? 4 : 6,
                 decoration: const InputDecoration(
+                  isDense: true,
                   labelText: 'Note',
                 ),
               ),
@@ -1025,20 +1122,30 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
           ),
         ),
       ],
+        );
+      },
     );
   }
 
   Widget _buildHoofMapSection() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final mapWidth = constraints.maxWidth > 860 ? 360.0 : constraints.maxWidth - 24;
+        final isPhone = constraints.maxWidth < 520;
+        final mapWidth = constraints.maxWidth > 860
+            ? 360.0
+            : (constraints.maxWidth - (isPhone ? 8 : 24)).clamp(260.0, 420.0);
         return SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          padding: EdgeInsets.fromLTRB(
+            isPhone ? 10 : 16,
+            isPhone ? 12 : 16,
+            isPhone ? 10 : 16,
+            20,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildVisitTopBar(),
-              const SizedBox(height: 12),
+              SizedBox(height: isPhone ? 8 : 12),
               Text(
                 widget.sessionType?.trim().isNotEmpty == true
                     ? widget.sessionType!
@@ -1048,49 +1155,53 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                       color: AppColors.textSecondary,
                     ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: isPhone ? 8 : 10),
               Align(
                 alignment: Alignment.centerLeft,
                 child: SizedBox(
                   width: mapWidth,
                   child: HoofPairMap(
                     footLabel: 'AS',
+                    compact: isPhone,
                     observations: _hoofMapObservations,
                     onZoneTap: _showZoneDialog,
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: isPhone ? 6 : 8),
               Align(
                 alignment: Alignment.centerRight,
                 child: SizedBox(
                   width: mapWidth,
                   child: HoofPairMap(
                     footLabel: 'AD',
+                    compact: isPhone,
                     observations: _hoofMapObservations,
                     onZoneTap: _showZoneDialog,
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: isPhone ? 6 : 8),
               Align(
                 alignment: Alignment.centerLeft,
                 child: SizedBox(
                   width: mapWidth,
                   child: HoofPairMap(
                     footLabel: 'PS',
+                    compact: isPhone,
                     observations: _hoofMapObservations,
                     onZoneTap: _showZoneDialog,
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: isPhone ? 6 : 8),
               Align(
                 alignment: Alignment.centerRight,
                 child: SizedBox(
                   width: mapWidth,
                   child: HoofPairMap(
                     footLabel: 'PD',
+                    compact: isPhone,
                     observations: _hoofMapObservations,
                     onZoneTap: _showZoneDialog,
                   ),
@@ -1104,11 +1215,19 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
   }
 
   Widget _buildOtherInfoSection() {
-    return ListView(
-      padding: const EdgeInsets.all(20),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isPhone = constraints.maxWidth < 520;
+        return ListView(
+      padding: EdgeInsets.fromLTRB(
+        isPhone ? 12 : 20,
+        isPhone ? 12 : 20,
+        isPhone ? 12 : 20,
+        20,
+      ),
       children: [
         _buildVisitTopBar(),
-        const SizedBox(height: 12),
+        SizedBox(height: isPhone ? 8 : 12),
         Text(
           widget.sessionType?.trim().isNotEmpty == true
               ? widget.sessionType!
@@ -1118,7 +1237,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                 color: AppColors.textSecondary,
               ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: isPhone ? 10 : 16),
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1131,13 +1250,15 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
               ),
               const SizedBox(height: 10),
               Text(
-                'Sezione dedicata ai campi operativi complementari della visita.',
+                'Sezione pronta per integrare i campi operativi complementari della visita.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],
           ),
         ),
       ],
+        );
+      },
     );
   }
 
@@ -1225,43 +1346,18 @@ class _NewVisitNavigationResult {
   final int cowNumber;
 }
 
-class _DateField extends StatelessWidget {
-  const _DateField({
-    required this.label,
-    required this.value,
-    required this.onTap,
-  });
-
-  final String label;
-  final String value;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTap: onTap,
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          suffixIcon: const Icon(Icons.calendar_today_rounded),
-        ),
-        child: Text(value),
-      ),
-    );
-  }
-}
-
 class _CounterField extends StatelessWidget {
   const _CounterField({
     required this.label,
     required this.value,
+    required this.compact,
     required this.onIncrement,
     required this.onDecrement,
   });
 
   final String label;
   final int value;
+  final bool compact;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
 
@@ -1281,12 +1377,14 @@ class _CounterField extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.border),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(compact ? 8 : 10),
             color: Colors.white,
           ),
           child: Row(
             children: [
               IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
                 onPressed: onDecrement,
                 icon: const Icon(Icons.remove_rounded),
               ),
@@ -1296,10 +1394,13 @@ class _CounterField extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
+                        fontSize: compact ? 16 : null,
                       ),
                 ),
               ),
               IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
                 onPressed: onIncrement,
                 icon: const Icon(Icons.add_rounded),
               ),
@@ -1317,12 +1418,14 @@ class _AppDropdownField<T> extends StatelessWidget {
     required this.value,
     required this.items,
     required this.onChanged,
+    required this.compact,
   });
 
   final String label;
   final T value;
   final List<DropdownMenuItem<T>> items;
   final ValueChanged<T?> onChanged;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -1330,17 +1433,27 @@ class _AppDropdownField<T> extends StatelessWidget {
       initialValue: value,
       items: items,
       onChanged: onChanged,
-      decoration: InputDecoration(labelText: label),
+      isDense: compact,
+      decoration: InputDecoration(
+        labelText: label,
+        isDense: compact,
+      ),
     );
   }
 }
 
-class _MapBottomBar extends StatelessWidget {
-  const _MapBottomBar({
+class _VisitBottomBar extends StatelessWidget {
+  const _VisitBottomBar({
+    required this.onPreviousCow,
+    required this.onList,
+    required this.onDelete,
     required this.onNextCow,
     required this.busy,
   });
 
+  final VoidCallback? onPreviousCow;
+  final VoidCallback? onList;
+  final VoidCallback? onDelete;
   final VoidCallback? onNextCow;
   final bool busy;
 
@@ -1358,11 +1471,40 @@ class _MapBottomBar extends StatelessWidget {
         ),
         child: Row(
           children: [
+            _BottomCompactButton(
+              label: 'Vacca\nprima',
+              icon: Icons.arrow_back_rounded,
+              onTap: busy ? null : onPreviousCow,
+            ),
+            const SizedBox(width: 6),
+            _BottomCompactButton(
+              icon: Icons.table_rows_rounded,
+              onTap: busy ? null : onList,
+            ),
+            const SizedBox(width: 6),
+            _BottomCompactButton(
+              icon: Icons.delete_outline_rounded,
+              danger: true,
+              onTap: busy ? null : onDelete,
+            ),
+            const SizedBox(width: 6),
             Expanded(
-              child: ElevatedButton.icon(
-                onPressed: busy ? null : onNextCow,
-                icon: const Icon(Icons.add_circle_outline_rounded),
-                label: const Text('Prossima vacca'),
+              child: SizedBox(
+                height: 54,
+                child: ElevatedButton(
+                  onPressed: busy ? null : onNextCow,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text(
+                    'Prossima',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ),
             ),
           ],
@@ -1376,10 +1518,12 @@ class _TopBarIconButton extends StatelessWidget {
   const _TopBarIconButton({
     required this.icon,
     required this.onTap,
+    required this.compact,
   });
 
   final IconData icon;
   final VoidCallback? onTap;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -1387,14 +1531,69 @@ class _TopBarIconButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       onTap: onTap,
       child: Container(
-        width: 42,
-        height: 42,
+        width: compact ? 28 : 36,
+        height: compact ? 28 : 36,
         decoration: BoxDecoration(
           color: onTap == null ? const Color(0xFFF2F4F5) : Colors.white,
           border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(7),
         ),
-        child: Icon(icon, size: 18),
+        child: Icon(icon, size: compact ? 17 : 18),
+      ),
+    );
+  }
+}
+
+class _BottomCompactButton extends StatelessWidget {
+  const _BottomCompactButton({
+    this.label,
+    required this.icon,
+    required this.onTap,
+    this.danger = false,
+  });
+
+  final String? label;
+  final IconData icon;
+  final VoidCallback? onTap;
+  final bool danger;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = danger ? AppColors.danger : AppColors.textPrimary;
+    return SizedBox(
+      width: label == null ? 52 : 72,
+      height: 54,
+      child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          side: BorderSide(
+            color: danger ? const Color(0xFFE2B3B8) : AppColors.border,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        child: label == null
+            ? Icon(icon, size: 20, color: foreground)
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 18, color: foreground),
+                  const SizedBox(height: 2),
+                  Text(
+                    label!,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    style: TextStyle(
+                      fontSize: 10,
+                      height: 1.05,
+                      fontWeight: FontWeight.w700,
+                      color: foreground,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -1405,12 +1604,16 @@ class _TopBarValueChip extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.onTap,
+    required this.compact,
+    this.emphasized = false,
     this.errorText,
   });
 
   final String label;
   final IconData icon;
   final VoidCallback? onTap;
+  final bool compact;
+  final bool emphasized;
   final String? errorText;
 
   @override
@@ -1423,8 +1626,8 @@ class _TopBarValueChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           onTap: onTap,
           child: Container(
-            height: 42,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            height: compact ? 34 : 40,
+            padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 10),
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border.all(
@@ -1434,15 +1637,22 @@ class _TopBarValueChip extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(icon, size: 16, color: AppColors.textSecondary),
-                const SizedBox(width: 8),
+                Icon(
+                  icon,
+                  size: compact ? 14 : 16,
+                  color: AppColors.textSecondary,
+                ),
+                SizedBox(width: compact ? 6 : 8),
                 Expanded(
                   child: Text(
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
+                          fontWeight: emphasized ? FontWeight.w800 : FontWeight.w700,
+                          fontSize: compact
+                              ? (emphasized ? 15 : 12)
+                              : (emphasized ? 16 : 14),
                         ),
                   ),
                 ),
@@ -1587,4 +1797,21 @@ const List<DropdownMenuItem<String>> _recheckOptions = [
   DropdownMenuItem(value: '30d', child: Text('30 gg')),
   DropdownMenuItem(value: '90d', child: Text('90 gg')),
 ];
+
+class _SignedIntegerTextInputFormatter extends TextInputFormatter {
+  const _SignedIntegerTextInputFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+    if (text.isEmpty || RegExp(r'^-?\d*$').hasMatch(text)) {
+      return newValue;
+    }
+    return oldValue;
+  }
+}
+
 
