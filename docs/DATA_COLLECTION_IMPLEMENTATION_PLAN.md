@@ -421,6 +421,19 @@ Ogni codice deve permettere di capire:
 - zona anatomica
 - categoria di osservazione
 
+## Totale Aree Cliccabili V1
+
+La configurazione V1 della mappa deve prevedere:
+
+- 48 aree cornee
+- 8 unghielli
+- 16 aree cutanee centrali
+- 8 aree cutanee laterali
+
+Totale:
+
+- `80 aree cliccabili`
+
 ## Horn
 
 Esempi richiesti:
@@ -479,6 +492,31 @@ La stessa logica si replica su:
 - `SKIN_34`
 - `SKIN_56`
 - `SKIN_78`
+
+## Skin Laterali
+
+Nuove aree richieste:
+
+- `SKIN_C1_LAT`
+- `SKIN_C2_LAT`
+- `SKIN_C3_LAT`
+- `SKIN_C4_LAT`
+- `SKIN_C5_LAT`
+- `SKIN_C6_LAT`
+- `SKIN_C7_LAT`
+- `SKIN_C8_LAT`
+
+Logica proposta:
+
+- `SKIN_C1_LAT` = area cutanea laterale associata all'unghione 1
+- `SKIN_C2_LAT` = area cutanea laterale associata all'unghione 2
+- stessa logica fino a `SKIN_C8_LAT`
+
+Queste aree:
+
+- appartengono alla categoria `skin`
+- usano lo stesso popup delle altre aree cutanee
+- vanno trattate come zone autonome, non come alias delle aree centrali
 
 ## Distinzioni Obbligatorie
 
@@ -567,7 +605,7 @@ Regola:
 
 Campi UI:
 
-- classificazione `Mortellaro`
+- `Tipologia`
 - `Estensione`
 - `Rimuovi`
 - `Conferma`
@@ -575,6 +613,30 @@ Campi UI:
 Regola:
 
 - i menu a tendina partono con opzione vuota
+- le aree `SKIN_C*_LAT` usano esattamente questo stesso popup
+
+Scelte `Tipologia`:
+
+- vuoto
+- `1 - Precoce`
+- `2 - Acuta`
+- `3 - Guarigione`
+- `4 - Cronica`
+- `4.1 - Riacutizzata`
+
+Scelte `Estensione`:
+
+- vuoto
+- `Focale`
+- `Ampio`
+- `Multi-zona`
+
+Comportamento:
+
+- `Conferma` salva o aggiorna il dato dell'area e colora la zona
+- `Rimuovi` svuota il dato dell'area e decolora la zona
+- modifiche successive nella stessa visita sovrascrivono il dato precedente dell'area
+- visite precedenti non devono mai essere alterate
 
 ## 7. Roadmap Di Implementazione
 

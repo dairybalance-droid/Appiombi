@@ -316,6 +316,31 @@ Rules:
 
 Normalized lesion records for horn and derm areas.
 
+Mappa V1 attesa:
+
+- 48 zone `horn`
+- 8 zone `accessory_digit`
+- 16 zone `skin` centrali
+- 8 zone `skin` laterali
+- totale `80 aree cliccabili`
+
+Zone `skin` laterali aggiuntive previste:
+
+- `SKIN_C1_LAT`
+- `SKIN_C2_LAT`
+- `SKIN_C3_LAT`
+- `SKIN_C4_LAT`
+- `SKIN_C5_LAT`
+- `SKIN_C6_LAT`
+- `SKIN_C7_LAT`
+- `SKIN_C8_LAT`
+
+Rules:
+
+- `SKIN_C*_LAT` are `skin` zones and must use the same cutaneous/Mortellaro popup semantics as the central skin zones.
+- An updated observation on the same area replaces the previous value for the same visit only.
+- Historical observations from previous visits must remain immutable.
+
 UI and standard operational queries should prefer `active_claw_observations`.
 
 ### cow_visit_flags

@@ -271,6 +271,19 @@ Significato:
 
 ## Mappa Unghioni
 
+### Totale Aree Cliccabili V1
+
+La mappa V1 deve supportare 80 aree cliccabili totali:
+
+- 48 aree cornee
+- 8 unghielli
+- 16 aree cutanee centrali
+- 8 aree cutanee laterali
+
+Totale:
+
+- `80 aree cliccabili`
+
 ### Principio Di Codifica Unica
 
 Ogni area della mappa unghioni deve avere una codifica univoca e stabile.
@@ -288,6 +301,48 @@ L'obiettivo e garantire:
 - interrogabilita futura
 - sincronizzazione multi-device affidabile
 
+### Struttura Codifica V1
+
+La mappa V1 comprende:
+
+- 8 unghioni: `C1` ... `C8`
+- 6 aree cornee per ogni unghione:
+  - `B`
+  - `S`
+  - `P`
+  - `APX`
+  - `LBab`
+  - `LBax`
+- 8 unghielli:
+  - `C1_UG` ... `C8_UG`
+- 16 aree cutanee centrali:
+  - `SKIN_12_Nod`, `SKIN_12_D`, `SKIN_12_ID`, `SKIN_12_Dors`
+  - `SKIN_34_Nod`, `SKIN_34_D`, `SKIN_34_ID`, `SKIN_34_Dors`
+  - `SKIN_56_Nod`, `SKIN_56_D`, `SKIN_56_ID`, `SKIN_56_Dors`
+  - `SKIN_78_Nod`, `SKIN_78_D`, `SKIN_78_ID`, `SKIN_78_Dors`
+- 8 aree cutanee laterali:
+  - `SKIN_C1_LAT`
+  - `SKIN_C2_LAT`
+  - `SKIN_C3_LAT`
+  - `SKIN_C4_LAT`
+  - `SKIN_C5_LAT`
+  - `SKIN_C6_LAT`
+  - `SKIN_C7_LAT`
+  - `SKIN_C8_LAT`
+
+Significato delle nuove aree laterali:
+
+- `SKIN_C1_LAT` = area cutanea laterale associata all'unghione 1
+- `SKIN_C2_LAT` = area cutanea laterale associata all'unghione 2
+- stessa logica fino a `SKIN_C8_LAT`
+
+Le aree `SKIN_C*_LAT`:
+
+- appartengono alla categoria `skin`
+- usano lo stesso popup delle altre aree cutanee/Mortellaro
+- vengono salvate solo nella visita corrente
+- possono essere modificate nella visita corrente senza alterare visite precedenti
+
 ### Popup Aree Corno
 
 Per le aree corno il popup deve contenere:
@@ -301,10 +356,37 @@ Per le aree corno il popup deve contenere:
 
 Per le aree cutanee il popup deve contenere:
 
-- classificazione `Mortellaro`
+- `Tipologia`
 - `Estensione`
 - pulsante `Rimuovi`
 - pulsante `Conferma`
+
+#### Tipologia
+
+Una sola scelta:
+
+- vuoto
+- `1 - Precoce`
+- `2 - Acuta`
+- `3 - Guarigione`
+- `4 - Cronica`
+- `4.1 - Riacutizzata`
+
+#### Estensione
+
+Una sola scelta:
+
+- vuoto
+- `Focale`
+- `Ampio`
+- `Multi-zona`
+
+#### Comportamento
+
+- `Conferma` salva o aggiorna il dato e colora l'area
+- `Rimuovi` svuota il dato e decolora l'area
+- se un'area gia salvata viene ritoccata e modificata, il nuovo dato sovrascrive quello precedente nella stessa visita
+- nessuna visita precedente deve essere modificata
 
 ## Effetti Attesi Sul Flusso UX
 
