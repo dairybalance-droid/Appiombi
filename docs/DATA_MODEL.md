@@ -341,6 +341,11 @@ Rules:
 - An updated observation on the same area replaces the previous value for the same visit only.
 - Historical observations from previous visits must remain immutable.
 
+Current V1 implementation note:
+
+- the touch-first UI can temporarily persist hoof-map state through `cow_visit_flags` when the exact popup semantics are not yet fully normalized into `claw_zone_observations`
+- the target long-term model remains one active structured observation per `cow_visit_id + zone_code`
+
 UI and standard operational queries should prefer `active_claw_observations`.
 
 ### cow_visit_flags

@@ -774,17 +774,27 @@ class SupabaseService {
   }
 
   Future<String> fetchCowVisitGroupLabel(String cowVisitId) async {
+    return fetchCowVisitTextFlag(
+      cowVisitId: cowVisitId,
+      flagKey: 'group_label',
+    );
+  }
+
+  Future<String> fetchCowVisitTextFlag({
+    required String cowVisitId,
+    required String flagKey,
+  }) async {
     if (_client == null) {
       return '';
     }
 
     final rows = await _withTimeout<List<dynamic>>(
-      label: 'cow_visit_flags.select_group_label',
+      label: 'cow_visit_flags.select_text_flag',
       future: _client!
           .from('cow_visit_flags')
           .select('id, flag_value_text')
           .eq('cow_visit_id', cowVisitId)
-          .eq('flag_key', 'group_label')
+          .eq('flag_key', flagKey)
           .limit(1),
     );
 
@@ -863,6 +873,22 @@ class SupabaseService {
       cowVisitId: cowVisitId,
       flagKey: 'group_label',
       value: groupLabel.trim(),
+    );
+  }
+
+  Future<void> saveCowVisitTextFlag({
+    required String cowVisitId,
+    required String flagKey,
+    required String value,
+  }) async {
+    if (_client == null) {
+      return;
+    }
+
+    await _upsertCowVisitTextFlag(
+      cowVisitId: cowVisitId,
+      flagKey: flagKey,
+      value: value,
     );
   }
 

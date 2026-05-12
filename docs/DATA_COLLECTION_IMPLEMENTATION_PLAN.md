@@ -696,6 +696,16 @@ Stato attuale:
 
 - costruire rappresentazione zone con codici stabili
 - collegare zone e visite
+- implementare superficie touch-first con `CustomPainter`
+- garantire 80 zone con codice univoco e hit area dedicata
+- mantenere `APX` separata da `P`
+- trattare gli unghielli come `accessory_digit` con bordo nero e popup corno
+- trattare le aree cutanee centrali e laterali con bordo rosso/rosa e popup cute
+
+Nota tecnica V1:
+
+- se la persistenza strutturata in `claw_zone_observations` non e ancora pienamente coerente con le scelte popup V1, e accettabile una persistenza intermedia compatibile per visita corrente
+- la normalizzazione definitiva per statistiche e interrogazioni per-zona resta uno step successivo
 
 ## Step 8: popup lesioni
 

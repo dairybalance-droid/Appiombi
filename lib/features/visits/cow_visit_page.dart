@@ -9,6 +9,8 @@ import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/loading_view.dart';
+import 'hoof_map_models.dart';
+import 'hoof_map_widget.dart';
 
 class CowVisitPage extends ConsumerStatefulWidget {
   const CowVisitPage({
@@ -52,11 +54,15 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
   int _bandagesCount = 0;
 
   bool _saving = false;
+  bool _savingMap = false;
   String? _cowNumberError;
+  _VisitSection _currentSection = _VisitSection.generalData;
+  Map<String, HoofZoneObservation> _hoofMapObservations = {};
 
   @override
   void initState() {
     super.initState();
+    HoofMapDefinitions.debugValidate();
     _cowNumberController.text = widget.cowNumber ?? '';
     _visitFuture = _loadPageData();
   }
@@ -78,6 +84,10 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     final results = await Future.wait([
       service.fetchCowVisit(widget.cowVisitId!),
       service.fetchSessionVisits(widget.sessionId!),
+      service.fetchCowVisitTextFlag(
+        cowVisitId: widget.cowVisitId!,
+        flagKey: 'hoof_map_v1_json',
+      ),
     ]).timeout(
       const Duration(seconds: 10),
       onTimeout: () => throw TimeoutException('Timeout caricamento visita vacca'),
@@ -85,6 +95,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
 
     final visit = results[0] as CowVisitDetail;
     final sessionVisits = results[1] as List<SessionVisitRow>;
+    final hoofMapFlag = results[2] as String;
 
     _cowNumberController.text = visit.cowNumber.toString();
     _groupController.text = visit.groupLabel;
@@ -97,6 +108,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     _antibioticCode = visit.antibioticCode;
     _antiInflammatoryCode = visit.antiInflammatoryCode;
     _recheckCode = visit.recheckCode;
+    _hoofMapObservations = decodeHoofMapObservations(hoofMapFlag);
 
     return _CowVisitPageData(
       visit: visit,
@@ -178,6 +190,32 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     } finally {
       if (mounted) {
         setState(() => _saving = false);
+      }
+    }
+  }
+
+  Future<void> _persistHoofMap() async {
+    if (widget.cowVisitId == null) {
+      return;
+    }
+
+    setState(() => _savingMap = true);
+    try {
+      await ref.read(supabaseServiceProvider).saveCowVisitTextFlag(
+            cowVisitId: widget.cowVisitId!,
+            flagKey: 'hoof_map_v1_json',
+            value: encodeHoofMapObservations(_hoofMapObservations),
+          );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore salvataggio mappa: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _savingMap = false);
       }
     }
   }
@@ -418,6 +456,146 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     );
   }
 
+  Future<void> _showZoneDialog(HoofMapZoneDefinition zone) async {
+    final existing = _hoofMapObservations[zone.zoneCode];
+    String lesionTypeCode = existing?.lesionTypeCode ?? '';
+    String extensionCode = existing?.extensionCode ?? '';
+    bool saving = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final lesionItems = zone.popupKind == HoofPopupKind.horn
+                ? hornLesionTypeItems()
+                : skinLesionTypeItems();
+
+            Future<void> save() async {
+              final navigator = Navigator.of(dialogContext);
+              final active = lesionTypeCode.isNotEmpty || extensionCode.isNotEmpty;
+              setDialogState(() => saving = true);
+
+              setState(() {
+                if (active) {
+                  _hoofMapObservations[zone.zoneCode] = HoofZoneObservation(
+                    zoneCode: zone.zoneCode,
+                    zoneFamily: zone.zoneFamily,
+                    anatomicalArea: zone.anatomicalArea,
+                    anatomicalPosition: zone.anatomicalPosition,
+                    popupKind: zone.popupKind,
+                    lesionTypeCode: lesionTypeCode,
+                    extensionCode: extensionCode,
+                    isActive: true,
+                  );
+                } else {
+                  _hoofMapObservations.remove(zone.zoneCode);
+                }
+              });
+
+              await _persistHoofMap();
+              if (!mounted) {
+                return;
+              }
+              navigator.pop();
+            }
+
+            Future<void> remove() async {
+              final navigator = Navigator.of(dialogContext);
+              setDialogState(() => saving = true);
+              setState(() {
+                _hoofMapObservations.remove(zone.zoneCode);
+              });
+              await _persistHoofMap();
+              if (!mounted) {
+                return;
+              }
+              navigator.pop();
+            }
+
+            return AlertDialog(
+              title: Text(hoofPopupTitle(zone.popupKind)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    zone.zoneCode,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${zone.anatomicalArea} · ${zone.anatomicalPosition}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: lesionTypeCode,
+                    items: lesionItems,
+                    onChanged: saving
+                        ? null
+                        : (value) {
+                            setDialogState(() => lesionTypeCode = value ?? '');
+                          },
+                    decoration: const InputDecoration(
+                      labelText: 'Tipologia',
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  DropdownButtonFormField<String>(
+                    initialValue: extensionCode,
+                    items: extensionItems(),
+                    onChanged: saving
+                        ? null
+                        : (value) {
+                            setDialogState(() => extensionCode = value ?? '');
+                          },
+                    decoration: const InputDecoration(
+                      labelText: 'Estensione',
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: saving ? null : remove,
+                  child: const Text('Rimuovi'),
+                ),
+                ElevatedButton(
+                  onPressed: saving ? null : save,
+                  child: Text(saving ? 'Attendere...' : 'Conferma'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _changeSection(_VisitSection target) async {
+    if (_currentSection == target) {
+      return;
+    }
+
+    if (_currentSection == _VisitSection.generalData) {
+      final saved = await _saveCurrentVisit();
+      if (!saved || !mounted) {
+        return;
+      }
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _currentSection = target;
+    });
+  }
+
   void _showVoiceInfo() {
     showDialog<void>(
       context: context,
@@ -436,6 +614,429 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     );
   }
 
+  PreferredSizeWidget? _buildAppBar() {
+    switch (_currentSection) {
+      case _VisitSection.generalData:
+        return AppBar(
+          title: const Text('Dati generici'),
+          actions: [
+            IconButton(
+              onPressed: _showVoiceInfo,
+              tooltip: 'Microfono',
+              icon: const Icon(Icons.mic_none_rounded),
+            ),
+          ],
+        );
+      case _VisitSection.hoofMap:
+        return null;
+      case _VisitSection.otherInfo:
+        return AppBar(
+          title: const Text('Altre info'),
+          actions: [
+            IconButton(
+              onPressed: _showVoiceInfo,
+              tooltip: 'Microfono',
+              icon: const Icon(Icons.mic_none_rounded),
+            ),
+          ],
+        );
+    }
+  }
+
+  Widget _buildBottomBar(_CowVisitPageData data) {
+    switch (_currentSection) {
+      case _VisitSection.generalData:
+        return SafeArea(
+          top: false,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                top: BorderSide(color: AppColors.border),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _saving ? null : () => _openPreviousVisit(data),
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    label: const Text('Precedente'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _saving ? null : _saveAndReturnToList,
+                    child: const Text('Elenco'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _saving ? null : _confirmDelete,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.danger,
+                    ),
+                    child: const Text('Elimina'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _saving ? null : _openNewCowFromRightAction,
+                    icon: const Icon(Icons.arrow_forward_rounded),
+                    label: const Text('Successivo'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      case _VisitSection.hoofMap:
+        return _MapBottomBar(
+          onBack: () => _changeSection(_VisitSection.generalData),
+          onMic: _showVoiceInfo,
+          onNext: () => _changeSection(_VisitSection.otherInfo),
+          busy: _savingMap,
+        );
+      case _VisitSection.otherInfo:
+        return _MapBottomBar(
+          onBack: () => _changeSection(_VisitSection.hoofMap),
+          onMic: _showVoiceInfo,
+          onNext: () => _changeSection(_VisitSection.generalData),
+          busy: false,
+          nextLabel: 'Dati generici',
+        );
+    }
+  }
+
+  Widget _buildHeader(String sessionType) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      sessionType,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Capo ${_cowNumberController.text.trim().isEmpty ? '-' : _cowNumberController.text.trim()}',
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.w800),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F6F6),
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  _currentSection.label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _SectionTab(
+                label: 'Dati generici',
+                active: _currentSection == _VisitSection.generalData,
+                onTap: () => _changeSection(_VisitSection.generalData),
+              ),
+              _SectionTab(
+                label: 'Mappa unghioni',
+                active: _currentSection == _VisitSection.hoofMap,
+                onTap: () => _changeSection(_VisitSection.hoofMap),
+              ),
+              _SectionTab(
+                label: 'Altre info',
+                active: _currentSection == _VisitSection.otherInfo,
+                onTap: () => _changeSection(_VisitSection.otherInfo),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGeneralDataSection(String sessionType) {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        _buildHeader(sessionType),
+        const SizedBox(height: 16),
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Compilazione visita',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              _DateField(
+                label: 'Data visita',
+                value: _formatDate(_visitDate ?? DateTime.now()),
+                onTap: _selectVisitDate,
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _cowNumberController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  signed: true,
+                  decimal: false,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Capo',
+                  errorText: _cowNumberError,
+                ),
+                onChanged: (_) {
+                  if (_cowNumberError != null) {
+                    setState(() => _cowNumberError = null);
+                  }
+                },
+                validator: (value) {
+                  final rawValue = value?.trim() ?? '';
+                  if (rawValue.isEmpty) {
+                    return 'Capo obbligatorio.';
+                  }
+                  if (!RegExp(r'^-?\d+$').hasMatch(rawValue)) {
+                    return 'Inserisci un numero intero valido.';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _groupController,
+                decoration: const InputDecoration(
+                  labelText: 'Gruppo',
+                ),
+              ),
+              const SizedBox(height: 14),
+              _AppDropdownField<String>(
+                label: 'Laminite',
+                value: _laminitisCode,
+                items: _laminitisOptions,
+                onChanged: (value) {
+                  setState(() => _laminitisCode = value ?? '');
+                },
+              ),
+              const SizedBox(height: 14),
+              _AppDropdownField<int?>(
+                label: 'Cavatappi',
+                value: _corkscrewCode,
+                items: _corkscrewOptions,
+                onChanged: (value) {
+                  setState(() => _corkscrewCode = value);
+                },
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: _CounterField(
+                      label: 'Suole',
+                      value: _solesCount,
+                      onIncrement: () => setState(() => _solesCount += 1),
+                      onDecrement: () {
+                        setState(() {
+                          if (_solesCount > 0) {
+                            _solesCount -= 1;
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _CounterField(
+                      label: 'Bende',
+                      value: _bandagesCount,
+                      onIncrement: () => setState(() => _bandagesCount += 1),
+                      onDecrement: () {
+                        setState(() {
+                          if (_bandagesCount > 0) {
+                            _bandagesCount -= 1;
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              _AppDropdownField<String>(
+                label: 'Antibiotico',
+                value: _antibioticCode,
+                items: _antibioticOptions,
+                onChanged: (value) {
+                  setState(() => _antibioticCode = value ?? '');
+                },
+              ),
+              const SizedBox(height: 14),
+              _AppDropdownField<String>(
+                label: 'Antinfiammatorio',
+                value: _antiInflammatoryCode,
+                items: _antiInflammatoryOptions,
+                onChanged: (value) {
+                  setState(() => _antiInflammatoryCode = value ?? '');
+                },
+              ),
+              const SizedBox(height: 14),
+              _AppDropdownField<String>(
+                label: 'Ricontrollo',
+                value: _recheckCode,
+                items: _recheckOptions,
+                onChanged: (value) {
+                  setState(() => _recheckCode = value ?? '');
+                },
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _notesController,
+                minLines: 4,
+                maxLines: 6,
+                decoration: const InputDecoration(
+                  labelText: 'Note',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHoofMapSection() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final mapWidth = constraints.maxWidth > 860 ? 360.0 : constraints.maxWidth - 24;
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: _CowNumberBox(
+                  cowNumber: _cowNumberController.text.trim().isEmpty
+                      ? '-'
+                      : _cowNumberController.text.trim(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
+                  width: mapWidth,
+                  child: HoofPairMap(
+                    footLabel: 'AS',
+                    observations: _hoofMapObservations,
+                    onZoneTap: _showZoneDialog,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: SizedBox(
+                  width: mapWidth,
+                  child: HoofPairMap(
+                    footLabel: 'AD',
+                    observations: _hoofMapObservations,
+                    onZoneTap: _showZoneDialog,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
+                  width: mapWidth,
+                  child: HoofPairMap(
+                    footLabel: 'PS',
+                    observations: _hoofMapObservations,
+                    onZoneTap: _showZoneDialog,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: SizedBox(
+                  width: mapWidth,
+                  child: HoofPairMap(
+                    footLabel: 'PD',
+                    observations: _hoofMapObservations,
+                    onZoneTap: _showZoneDialog,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildOtherInfoSection() {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        _buildHeader(widget.sessionType?.trim().isNotEmpty == true
+            ? widget.sessionType!
+            : 'Sessione operativa'),
+        const SizedBox(height: 16),
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Altre info',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Sezione dedicata ai campi operativi complementari della visita.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final sessionType = widget.sessionType?.trim().isNotEmpty == true
@@ -443,69 +1044,14 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
         : 'Sessione operativa';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dati generici'),
-        actions: [
-          IconButton(
-            onPressed: _showVoiceInfo,
-            tooltip: 'Microfono',
-            icon: const Icon(Icons.mic_none_rounded),
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(),
       bottomNavigationBar: FutureBuilder<_CowVisitPageData>(
         future: _visitFuture,
         builder: (context, snapshot) {
-          return SafeArea(
-            top: false,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(
-                  top: BorderSide(color: AppColors.border),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _saving || !snapshot.hasData
-                          ? null
-                          : () => _openPreviousVisit(snapshot.data!),
-                      icon: const Icon(Icons.arrow_back_rounded),
-                      label: const Text('Precedente'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _saving ? null : _saveAndReturnToList,
-                      child: const Text('Elenco'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _saving ? null : _confirmDelete,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.danger,
-                      ),
-                      child: const Text('Elimina'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _saving ? null : _openNewCowFromRightAction,
-                      icon: const Icon(Icons.arrow_forward_rounded),
-                      label: const Text('Successivo'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
+          if (!snapshot.hasData) {
+            return const SizedBox.shrink();
+          }
+          return _buildBottomBar(snapshot.data!);
         },
       ),
       body: FutureBuilder<_CowVisitPageData>(
@@ -533,226 +1079,27 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
             );
           }
 
-          return SafeArea(
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
-                  AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    sessionType,
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'Capo ${_cowNumberController.text.trim().isEmpty ? '-' : _cowNumberController.text.trim()}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall
-                                        ?.copyWith(fontWeight: FontWeight.w800),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF3F6F6),
-                                border: Border.all(color: AppColors.border),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Text(
-                                'Dati generici',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: const [
-                            _SectionTab(label: 'Dati generici', active: true),
-                            _SectionTab(label: 'Mappa unghioni', active: false),
-                            _SectionTab(label: 'Altre info', active: false),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Compilazione visita',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                        const SizedBox(height: 16),
-                        _DateField(
-                          label: 'Data visita',
-                          value: _formatDate(_visitDate ?? DateTime.now()),
-                          onTap: _selectVisitDate,
-                        ),
-                        const SizedBox(height: 14),
-                        TextFormField(
-                          controller: _cowNumberController,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            signed: true,
-                            decimal: false,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: 'Capo',
-                            errorText: _cowNumberError,
-                          ),
-                          onChanged: (_) {
-                            if (_cowNumberError != null) {
-                              setState(() => _cowNumberError = null);
-                            }
-                          },
-                          validator: (value) {
-                            final rawValue = value?.trim() ?? '';
-                            if (rawValue.isEmpty) {
-                              return 'Capo obbligatorio.';
-                            }
-                            if (!RegExp(r'^-?\d+$').hasMatch(rawValue)) {
-                              return 'Inserisci un numero intero valido.';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 14),
-                        TextFormField(
-                          controller: _groupController,
-                          decoration: const InputDecoration(
-                            labelText: 'Gruppo',
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        _AppDropdownField<String>(
-                          label: 'Laminite',
-                          value: _laminitisCode,
-                          items: _laminitisOptions,
-                          onChanged: (value) {
-                            setState(() => _laminitisCode = value ?? '');
-                          },
-                        ),
-                        const SizedBox(height: 14),
-                        _AppDropdownField<int?>(
-                          label: 'Cavatappi',
-                          value: _corkscrewCode,
-                          items: _corkscrewOptions,
-                          onChanged: (value) {
-                            setState(() => _corkscrewCode = value);
-                          },
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _CounterField(
-                                label: 'Suole',
-                                value: _solesCount,
-                                onIncrement: () {
-                                  setState(() => _solesCount += 1);
-                                },
-                                onDecrement: () {
-                                  setState(() {
-                                    if (_solesCount > 0) {
-                                      _solesCount -= 1;
-                                    }
-                                  });
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _CounterField(
-                                label: 'Bende',
-                                value: _bandagesCount,
-                                onIncrement: () {
-                                  setState(() => _bandagesCount += 1);
-                                },
-                                onDecrement: () {
-                                  setState(() {
-                                    if (_bandagesCount > 0) {
-                                      _bandagesCount -= 1;
-                                    }
-                                  });
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        _AppDropdownField<String>(
-                          label: 'Antibiotico',
-                          value: _antibioticCode,
-                          items: _antibioticOptions,
-                          onChanged: (value) {
-                            setState(() => _antibioticCode = value ?? '');
-                          },
-                        ),
-                        const SizedBox(height: 14),
-                        _AppDropdownField<String>(
-                          label: 'Antinfiammatorio',
-                          value: _antiInflammatoryCode,
-                          items: _antiInflammatoryOptions,
-                          onChanged: (value) {
-                            setState(() => _antiInflammatoryCode = value ?? '');
-                          },
-                        ),
-                        const SizedBox(height: 14),
-                        _AppDropdownField<String>(
-                          label: 'Ricontrollo',
-                          value: _recheckCode,
-                          items: _recheckOptions,
-                          onChanged: (value) {
-                            setState(() => _recheckCode = value ?? '');
-                          },
-                        ),
-                        const SizedBox(height: 14),
-                        TextFormField(
-                          controller: _notesController,
-                          minLines: 4,
-                          maxLines: 6,
-                          decoration: const InputDecoration(
-                            labelText: 'Note',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          return Form(
+            key: _formKey,
+            child: switch (_currentSection) {
+              _VisitSection.generalData => _buildGeneralDataSection(sessionType),
+              _VisitSection.hoofMap => _buildHoofMapSection(),
+              _VisitSection.otherInfo => _buildOtherInfoSection(),
+            },
           );
         },
       ),
     );
   }
+}
+
+enum _VisitSection {
+  generalData('Dati generici'),
+  hoofMap('Mappa unghioni'),
+  otherInfo('Altre info');
+
+  const _VisitSection(this.label);
+  final String label;
 }
 
 class _CowVisitPageData {
@@ -779,28 +1126,34 @@ class _SectionTab extends StatelessWidget {
   const _SectionTab({
     required this.label,
     required this.active,
+    required this.onTap,
   });
 
   final String label;
   final bool active;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: active ? const Color(0xFFEFE6D9) : const Color(0xFFF3F6F6),
-        border: Border.all(
-          color: active ? AppColors.primary : AppColors.border,
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: active ? const Color(0xFFEFE6D9) : const Color(0xFFF3F6F6),
+          border: Border.all(
+            color: active ? AppColors.primary : AppColors.border,
+          ),
+          borderRadius: BorderRadius.circular(8),
         ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: active ? AppColors.primary : AppColors.textSecondary,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: active ? AppColors.primary : AppColors.textSecondary,
+          ),
         ),
       ),
     );
@@ -913,6 +1266,112 @@ class _AppDropdownField<T> extends StatelessWidget {
       items: items,
       onChanged: onChanged,
       decoration: InputDecoration(labelText: label),
+    );
+  }
+}
+
+class _CowNumberBox extends StatelessWidget {
+  const _CowNumberBox({required this.cowNumber});
+
+  final String cowNumber;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 118,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFF121212), width: 2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Capo',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 6),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              cowNumber,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MapBottomBar extends StatelessWidget {
+  const _MapBottomBar({
+    required this.onBack,
+    required this.onMic,
+    required this.onNext,
+    required this.busy,
+    this.nextLabel = 'Altre info',
+  });
+
+  final VoidCallback onBack;
+  final VoidCallback onMic;
+  final VoidCallback onNext;
+  final bool busy;
+  final String nextLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: AppColors.border),
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: busy ? null : onBack,
+                icon: const Icon(Icons.arrow_back_rounded),
+                label: const Text('Dati generici'),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Container(
+              width: 54,
+              height: 46,
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+              ),
+              child: IconButton(
+                onPressed: busy ? null : onMic,
+                icon: const Icon(Icons.mic_none_rounded),
+                tooltip: 'Microfono',
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: busy ? null : onNext,
+                icon: const Icon(Icons.arrow_forward_rounded),
+                label: Text(nextLabel),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

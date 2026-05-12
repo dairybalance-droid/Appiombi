@@ -284,6 +284,17 @@ Totale:
 
 - `80 aree cliccabili`
 
+### Implementazione Touch-First V1
+
+La Mappa Unghioni V1 deve essere costruita in Flutter come superficie touch-first con:
+
+- `CustomPainter`
+- aree codificate con `Path` visibile
+- area touch separata o ampliata rispetto al disegno
+- codici stabili per ogni zona
+
+La mappa non deve essere una bitmap cliccabile.
+
 ### Principio Di Codifica Unica
 
 Ogni area della mappa unghioni deve avere una codifica univoca e stabile.
@@ -342,6 +353,17 @@ Le aree `SKIN_C*_LAT`:
 - usano lo stesso popup delle altre aree cutanee/Mortellaro
 - vengono salvate solo nella visita corrente
 - possono essere modificate nella visita corrente senza alterare visite precedenti
+
+### Persistenza V1
+
+La persistenza strutturata definitiva per singola zona resta un passo successivo se la tabella osservazioni non e ancora perfettamente allineata alle scelte popup V1.
+
+Nel frattempo la V1 tecnica puo usare:
+
+- stato locale della pagina
+- fallback persistito compatibile per la visita corrente
+
+senza perdere la semantica dei codici area.
 
 ### Popup Aree Corno
 
