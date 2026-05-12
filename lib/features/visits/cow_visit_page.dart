@@ -1,13 +1,13 @@
 ﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../services/supabase_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/cow_number_keypad_dialog.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/loading_view.dart';
 import 'hoof_map_models.dart';
@@ -144,153 +144,35 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
   }
 
   Future<void> _editCowNumberFromTopBar() async {
-    final controller = TextEditingController(text: _cowNumberController.text.trim());
-    final focusNode = FocusNode();
-    String? inlineError;
-    bool saving = false;
     final previousValue = _cowNumberController.text.trim();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      focusNode.requestFocus();
-      _selectAllText(controller);
-    });
-
-    final updated = await showDialog<bool>(
+    final updated = await showCowNumberKeypadDialog<bool>(
       context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            void focusAndSelectAll() {
-              focusNode.requestFocus();
-              _selectAllText(controller);
-            }
+      title: 'Modifica numero capo',
+      initialValue: previousValue,
+      onMicTap: _showVoiceInfo,
+      onConfirm: (cowNumber) async {
+        _cowNumberController.text = cowNumber.toString();
+        setState(() {
+          _cowNumberError = null;
+        });
 
-            Future<void> submit() async {
-              final navigator = Navigator.of(dialogContext);
-              final rawValue = controller.text.trim();
-              if (!RegExp(r'^-?\d+$').hasMatch(rawValue)) {
-                setDialogState(() {
-                  inlineError = 'Inserisci un numero intero valido.';
-                });
-                focusAndSelectAll();
-                return;
-              }
+        final saved = await _saveCurrentVisit();
+        if (!mounted) {
+          return const CowNumberSubmitResult.error('Vista non disponibile.');
+        }
 
-              setDialogState(() {
-                inlineError = null;
-                saving = true;
-              });
+        if (!saved) {
+          _cowNumberController.text = previousValue;
+          return CowNumberSubmitResult.duplicate(
+            _cowNumberError ?? 'Capo già presente.',
+          );
+        }
 
-              _cowNumberController.text = rawValue;
-              setState(() {
-                _cowNumberError = null;
-              });
-
-              final saved = await _saveCurrentVisit();
-              if (!mounted) {
-                return;
-              }
-
-              if (!saved) {
-                _cowNumberController.text = previousValue;
-                setDialogState(() {
-                  inlineError = _cowNumberError ?? 'Capo già presente.';
-                  saving = false;
-                });
-                focusAndSelectAll();
-                return;
-              }
-
-              navigator.pop(true);
-            }
-
-            return AlertDialog(
-              title: const Text('Modifica numero capo'),
-              content: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 320),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: controller,
-                            focusNode: focusNode,
-                            autofocus: true,
-                            enabled: !saving,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              signed: true,
-                              decimal: false,
-                            ),
-                            textInputAction: TextInputAction.done,
-                            inputFormatters: const [_SignedIntegerTextInputFormatter()],
-                            decoration: InputDecoration(
-                              isDense: true,
-                              labelText: 'Capo',
-                              hintText: 'Es. 101 o -12',
-                              errorText: inlineError,
-                            ),
-                            onTap: () => _selectAllText(controller),
-                            onChanged: (_) {
-                              if (inlineError != null) {
-                                setDialogState(() => inlineError = null);
-                              }
-                            },
-                            onSubmitted: (_) => submit(),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 44,
-                          height: 44,
-                          child: OutlinedButton(
-                            onPressed: saving
-                                ? null
-                                : () {
-                                    _toggleNegativePrefix(controller);
-                                    focusAndSelectAll();
-                                  },
-                            style: OutlinedButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                            ),
-                            child: const Text(
-                              '-',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: saving
-                      ? null
-                      : () => Navigator.of(dialogContext).pop(false),
-                  child: const Text('Annulla'),
-                ),
-                ElevatedButton(
-                  onPressed: saving ? null : submit,
-                  child: Text(saving ? 'Attendere...' : 'OK'),
-                ),
-              ],
-            );
-          },
-        );
+        return const CowNumberSubmitResult.success(true);
       },
     );
 
-    if (!mounted || updated != true || controller.text.trim() == previousValue) {
+    if (!mounted || updated != true) {
       return;
     }
     setState(() {});
@@ -542,162 +424,31 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     if (widget.sessionId == null) {
       return null;
     }
-
-    final controller = TextEditingController();
-    final focusNode = FocusNode();
-    String? inlineError;
-    bool submitting = false;
-
-    void requestFocusAndSelectAll() {
-      focusNode.requestFocus();
-      _selectAllText(controller);
-    }
-
-    return showDialog<_NewVisitNavigationResult?>(
+    return showCowNumberKeypadDialog<_NewVisitNavigationResult>(
       context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          requestFocusAndSelectAll();
-        });
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            Future<void> submit() async {
-              final navigator = Navigator.of(dialogContext);
-              final rawValue = controller.text.trim();
-              if (!RegExp(r'^-?\d+$').hasMatch(rawValue)) {
-                setDialogState(() {
-                  inlineError = 'Inserisci un numero intero valido.';
-                });
-                requestFocusAndSelectAll();
-                return;
-              }
-
-              final cowNumber = int.parse(rawValue);
-              setDialogState(() {
-                inlineError = null;
-                submitting = true;
-              });
-
-              try {
-                final visit = await ref.read(supabaseServiceProvider).createDraftVisit(
-                      farmId: widget.farmId,
-                      sessionId: widget.sessionId!,
-                      cowNumber: cowNumber,
-                    );
-                if (!mounted) {
-                  return;
-                }
-                navigator.pop(
-                  _NewVisitNavigationResult(
-                    cowVisitId: visit.id,
-                    cowNumber: cowNumber,
-                  ),
-                );
-              } on DuplicateCowNumberException {
-                setDialogState(() {
-                  inlineError = 'Capo già presente.';
-                  submitting = false;
-                });
-                requestFocusAndSelectAll();
-              } catch (error) {
-                setDialogState(() {
-                  inlineError = 'Errore creazione visita: $error';
-                  submitting = false;
-                });
-                requestFocusAndSelectAll();
-              }
-            }
-
-            return AlertDialog(
-              title: const Text('Nuova visita vacca'),
-              content: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 320),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: controller,
-                            focusNode: focusNode,
-                            autofocus: true,
-                            enabled: !submitting,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              signed: true,
-                              decimal: false,
-                            ),
-                            textInputAction: TextInputAction.done,
-                            inputFormatters: const [_SignedIntegerTextInputFormatter()],
-                            decoration: InputDecoration(
-                              isDense: true,
-                              labelText: 'Numero capo',
-                              hintText: 'Es. 101 o -12',
-                              errorText: inlineError,
-                            ),
-                            onTap: () => _selectAllText(controller),
-                            onChanged: (_) {
-                              if (inlineError != null) {
-                                setDialogState(() => inlineError = null);
-                              }
-                            },
-                            onSubmitted: (_) => submit(),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 44,
-                          height: 44,
-                          child: OutlinedButton(
-                            onPressed: submitting
-                                ? null
-                                : () {
-                                    _toggleNegativePrefix(controller);
-                                    requestFocusAndSelectAll();
-                                  },
-                            style: OutlinedButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                            ),
-                            child: const Text(
-                              '-',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Accetta interi positivi o negativi.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: submitting
-                      ? null
-                      : () => Navigator.of(dialogContext).pop(null),
-                  child: const Text('Annulla'),
-                ),
-                ElevatedButton(
-                  onPressed: submitting ? null : submit,
-                  child: Text(submitting ? 'Attendere...' : 'OK'),
-                ),
-              ],
-            );
-          },
-        );
+      title: 'Nuova visita vacca',
+      onMicTap: _showVoiceInfo,
+      onConfirm: (cowNumber) async {
+        try {
+          final visit = await ref.read(supabaseServiceProvider).createDraftVisit(
+                farmId: widget.farmId,
+                sessionId: widget.sessionId!,
+                cowNumber: cowNumber,
+              );
+          if (!mounted) {
+            return const CowNumberSubmitResult.error('Vista non disponibile.');
+          }
+          return CowNumberSubmitResult.success(
+            _NewVisitNavigationResult(
+              cowVisitId: visit.id,
+              cowNumber: cowNumber,
+            ),
+          );
+        } on DuplicateCowNumberException {
+          return const CowNumberSubmitResult.duplicate('Capo già presente.');
+        } catch (error) {
+          return CowNumberSubmitResult.error('Errore creazione visita: $error');
+        }
       },
     );
   }
@@ -886,24 +637,6 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
           ],
         );
       },
-    );
-  }
-
-  void _selectAllText(TextEditingController controller) {
-    controller.selection = TextSelection(
-      baseOffset: 0,
-      extentOffset: controller.text.length,
-    );
-  }
-
-  void _toggleNegativePrefix(TextEditingController controller) {
-    final current = controller.text;
-    final nextValue = current.startsWith('-')
-        ? current.substring(1)
-        : '-$current';
-    controller.value = TextEditingValue(
-      text: nextValue,
-      selection: TextSelection.collapsed(offset: nextValue.length),
     );
   }
 
@@ -1798,20 +1531,5 @@ const List<DropdownMenuItem<String>> _recheckOptions = [
   DropdownMenuItem(value: '90d', child: Text('90 gg')),
 ];
 
-class _SignedIntegerTextInputFormatter extends TextInputFormatter {
-  const _SignedIntegerTextInputFormatter();
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final text = newValue.text;
-    if (text.isEmpty || RegExp(r'^-?\d*$').hasMatch(text)) {
-      return newValue;
-    }
-    return oldValue;
-  }
-}
 
 

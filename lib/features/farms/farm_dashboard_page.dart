@@ -252,10 +252,10 @@ class _DashboardBody extends StatelessWidget {
 
         return ListView(
           padding: EdgeInsets.fromLTRB(
+            mediumLayout ? 28 : 16,
+            6,
+            mediumLayout ? 28 : 16,
             mediumLayout ? 28 : 20,
-            8,
-            mediumLayout ? 28 : 20,
-            28,
           ),
           children: [
             _FarmHeroCard(

@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../services/supabase_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/cow_number_keypad_dialog.dart';
 import '../../widgets/app_primary_button.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/loading_view.dart';
@@ -76,108 +77,54 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
   }
 
   Future<void> _openAddCowDialog(_SessionDetailData data) async {
-    final controller = TextEditingController();
-    String? inlineError;
-    bool submitting = false;
-
-    await showDialog<void>(
+    final visit = await showCowNumberKeypadDialog<CowVisitDetail>(
       context: context,
-      barrierDismissible: false,
+      title: 'Nuova visita vacca',
+      onMicTap: _showVoiceInfo,
+      onConfirm: (cowNumber) async {
+        try {
+          final visit = await ref.read(supabaseServiceProvider).createDraftVisit(
+                farmId: widget.farmId,
+                sessionId: widget.sessionId,
+                cowNumber: cowNumber,
+              );
+          return CowNumberSubmitResult.success(visit);
+        } on DuplicateCowNumberException {
+          return const CowNumberSubmitResult.duplicate('Capo già presente.');
+        } catch (error) {
+          return CowNumberSubmitResult.error('Errore creazione visita: $error');
+        }
+      },
+    );
+
+    if (!mounted || visit == null) {
+      return;
+    }
+
+    await context.push(
+      '/farms/${widget.farmId}/visits/new'
+      '?cowVisitId=${Uri.encodeComponent(visit.id)}'
+      '&sessionId=${Uri.encodeComponent(widget.sessionId)}'
+      '&sessionType=${Uri.encodeComponent(data.session.sessionTypeLabel)}'
+      '&farmName=${Uri.encodeComponent(widget.farmName)}'
+      '&cowNumber=${Uri.encodeComponent(visit.cowNumber.toString())}',
+    );
+    await _reloadSessionData();
+  }
+
+  void _showVoiceInfo() {
+    showDialog<void>(
+      context: context,
       builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            Future<void> submit() async {
-              final navigator = Navigator.of(dialogContext);
-              final rawValue = controller.text.trim();
-              if (!RegExp(r'^-?\d+$').hasMatch(rawValue)) {
-                setDialogState(() {
-                  inlineError = 'Inserisci un numero intero valido.';
-                });
-                return;
-              }
-
-              final cowNumber = int.parse(rawValue);
-              setDialogState(() {
-                submitting = true;
-                inlineError = null;
-              });
-
-              try {
-                final visit = await ref.read(supabaseServiceProvider).createDraftVisit(
-                      farmId: widget.farmId,
-                      sessionId: widget.sessionId,
-                      cowNumber: cowNumber,
-                    );
-
-                if (!mounted) {
-                  return;
-                }
-
-                navigator.pop();
-                await this.context.push(
-                  '/farms/${widget.farmId}/visits/new'
-                  '?cowVisitId=${Uri.encodeComponent(visit.id)}'
-                  '&sessionId=${Uri.encodeComponent(widget.sessionId)}'
-                  '&sessionType=${Uri.encodeComponent(data.session.sessionTypeLabel)}'
-                  '&farmName=${Uri.encodeComponent(widget.farmName)}'
-                  '&cowNumber=${Uri.encodeComponent(cowNumber.toString())}',
-                );
-                await _reloadSessionData();
-              } on DuplicateCowNumberException {
-                setDialogState(() {
-                  inlineError = 'Capo già presente.';
-                  submitting = false;
-                });
-              } catch (error) {
-                setDialogState(() {
-                  inlineError = 'Errore creazione visita: $error';
-                  submitting = false;
-                });
-              }
-            }
-
-            return AlertDialog(
-              title: const Text('Nuova visita vacca'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: controller,
-                    autofocus: true,
-                    enabled: !submitting,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      signed: true,
-                      decimal: false,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: 'Numero capo',
-                      hintText: 'Es. 101 o -12',
-                      errorText: inlineError,
-                      suffixIcon: IconButton(
-                        onPressed: null,
-                        icon: const Icon(Icons.mic_none_rounded),
-                        tooltip: 'Microfono non disponibile',
-                      ),
-                    ),
-                    onSubmitted: (_) => submit(),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: submitting
-                      ? null
-                      : () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Annulla'),
-                ),
-                ElevatedButton(
-                  onPressed: submitting ? null : submit,
-                  child: Text(submitting ? 'Attendere...' : 'OK'),
-                ),
-              ],
-            );
-          },
+        return AlertDialog(
+          title: const Text('Microfono'),
+          content: const Text('Registrazione vocale non ancora attiva.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Chiudi'),
+            ),
+          ],
         );
       },
     );
@@ -313,7 +260,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
           if (data == null) {
             return const ErrorView(
               title: 'Sessione non trovata',
-              message: 'La sessione richiesta non è disponibile.',
+              message: 'La sessione richiesta non Ã¨ disponibile.',
             );
           }
 
@@ -331,10 +278,11 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
               .toList();
           final summary = _SessionSummaryMetrics.fromVisits(allVisits);
 
+          final compact = MediaQuery.sizeOf(context).width < 520;
           return Stack(
             children: [
               ListView(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(compact ? 14 : 20),
                 children: [
                   AppCard(
                     child: Column(
@@ -364,20 +312,20 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: compact ? 12 : 16),
                   AppCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _SessionCounters(metrics: summary),
-                        const SizedBox(height: 18),
+                        SizedBox(height: compact ? 14 : 18),
                         Text(
                           'Capi registrati nella sessione',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
                         ),
-                        const SizedBox(height: 14),
+                        SizedBox(height: compact ? 10 : 14),
                         TextField(
                           controller: _searchController,
                           decoration: const InputDecoration(
@@ -432,7 +380,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                                     children: const [
                                       _TableHeaderCell('Mod.'),
                                       _TableHeaderCell('N. Capo'),
-                                      _TableHeaderCell('Lesione più grave'),
+                                      _TableHeaderCell('Lesione piÃ¹ grave'),
                                       _TableHeaderCell('Farmaci'),
                                       _TableHeaderCell('Suole'),
                                       _TableHeaderCell('Bende'),
@@ -467,7 +415,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: compact ? 12 : 16),
                   AppPrimaryButton(
                     label: session.status == 'closed'
                         ? 'Sessione chiusa'
@@ -861,3 +809,4 @@ class _SummaryLabel extends StatelessWidget {
     );
   }
 }
+

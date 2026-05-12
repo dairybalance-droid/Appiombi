@@ -12,8 +12,9 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 520;
     final cardChild = Padding(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(compact ? 14 : 18),
       child: child,
     );
 
@@ -21,7 +22,7 @@ class AppCard extends StatelessWidget {
       child: onTap == null
           ? cardChild
           : InkWell(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(compact ? 10 : 12),
               onTap: onTap,
               child: cardChild,
             ),
