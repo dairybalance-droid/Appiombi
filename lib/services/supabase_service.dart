@@ -109,10 +109,14 @@ class CowVisitDetail {
     required this.sessionId,
     required this.cowNumber,
     required this.visitDate,
+    required this.groupLabel,
+    required this.laminitisCode,
+    required this.corkscrewCode,
     required this.solesCount,
     required this.bandagesCount,
     required this.antibioticCode,
     required this.antiInflammatoryCode,
+    required this.recheckCode,
     required this.notes,
     required this.status,
   });
@@ -122,10 +126,14 @@ class CowVisitDetail {
   final String sessionId;
   final int cowNumber;
   final DateTime visitDate;
+  final String groupLabel;
+  final String laminitisCode;
+  final int? corkscrewCode;
   final int solesCount;
   final int bandagesCount;
   final String antibioticCode;
   final String antiInflammatoryCode;
+  final String recheckCode;
   final String notes;
   final String status;
 }
@@ -648,10 +656,14 @@ class SupabaseService {
         sessionId: sessionId,
         cowNumber: cowNumber,
         visitDate: DateTime.now(),
+        groupLabel: '',
+        laminitisCode: '',
+        corkscrewCode: null,
         solesCount: 0,
         bandagesCount: 0,
         antibioticCode: '',
         antiInflammatoryCode: '',
+        recheckCode: '',
         notes: '',
         status: 'draft',
       );
@@ -730,7 +742,7 @@ class SupabaseService {
       future: _client!
           .from('active_cow_visits')
           .select(
-            'id, farm_id, session_id, cow_number, visit_date, soles_count, bandages_count, antibiotic_code, anti_inflammatory_code, notes, status',
+            'id, farm_id, session_id, cow_number, visit_date, laminitis_code, corkscrew_code, soles_count, bandages_count, antibiotic_code, anti_inflammatory_code, recheck_code, notes, status',
           )
           .eq('id', cowVisitId)
           .limit(1),
@@ -740,15 +752,62 @@ class SupabaseService {
       throw Exception('Visita vacca non trovata.');
     }
 
-    return _mapCowVisitDetail(rows.first as Map<String, dynamic>);
+    final visit = _mapCowVisitDetail(rows.first as Map<String, dynamic>);
+    final groupLabel = await fetchCowVisitGroupLabel(cowVisitId);
+    return CowVisitDetail(
+      id: visit.id,
+      farmId: visit.farmId,
+      sessionId: visit.sessionId,
+      cowNumber: visit.cowNumber,
+      visitDate: visit.visitDate,
+      groupLabel: groupLabel,
+      laminitisCode: visit.laminitisCode,
+      corkscrewCode: visit.corkscrewCode,
+      solesCount: visit.solesCount,
+      bandagesCount: visit.bandagesCount,
+      antibioticCode: visit.antibioticCode,
+      antiInflammatoryCode: visit.antiInflammatoryCode,
+      recheckCode: visit.recheckCode,
+      notes: visit.notes,
+      status: visit.status,
+    );
   }
 
-  Future<void> saveCowVisitBasic({
+  Future<String> fetchCowVisitGroupLabel(String cowVisitId) async {
+    if (_client == null) {
+      return '';
+    }
+
+    final rows = await _withTimeout<List<dynamic>>(
+      label: 'cow_visit_flags.select_group_label',
+      future: _client!
+          .from('cow_visit_flags')
+          .select('id, flag_value_text')
+          .eq('cow_visit_id', cowVisitId)
+          .eq('flag_key', 'group_label')
+          .limit(1),
+    );
+
+    if (rows.isEmpty) {
+      return '';
+    }
+
+    return ((rows.first as Map<String, dynamic>)['flag_value_text'] as String? ?? '').trim();
+  }
+
+  Future<void> saveCowVisitGeneralData({
     required String cowVisitId,
+    required String sessionId,
+    required DateTime visitDate,
+    required int cowNumber,
+    required String groupLabel,
+    required String laminitisCode,
+    required int? corkscrewCode,
     required int solesCount,
     required int bandagesCount,
-    required bool antibiotic,
-    required bool antiInflammatory,
+    required String antibioticCode,
+    required String antiInflammatoryCode,
+    required String recheckCode,
     required String notes,
   }) async {
     if (_client == null) {
@@ -756,18 +815,73 @@ class SupabaseService {
     }
 
     final profileId = await _fetchCurrentProfileId();
+    final duplicateRows = await _withTimeout<List<dynamic>>(
+      label: 'active_cow_visits.duplicate_check_on_update',
+      future: _client!
+          .from('active_cow_visits')
+          .select('id')
+          .eq('session_id', sessionId)
+          .eq('cow_number', cowNumber)
+          .neq('id', cowVisitId)
+          .limit(1),
+    );
+
+    if (duplicateRows.isNotEmpty) {
+      throw DuplicateCowNumberException(cowNumber);
+    }
+
+    try {
+      await _withTimeout(
+        label: 'cow_visits.update_general_data',
+        future: _client!
+            .from('cow_visits')
+            .update({
+              'visit_date': visitDate.toIso8601String().split('T').first,
+              'cow_number': cowNumber,
+              'laminitis_code': laminitisCode.isEmpty ? null : laminitisCode,
+              'corkscrew_code': corkscrewCode,
+              'soles_count': solesCount,
+              'bandages_count': bandagesCount,
+              'antibiotic_code': antibioticCode.isEmpty ? null : antibioticCode,
+              'anti_inflammatory_code':
+                  antiInflammatoryCode.isEmpty ? null : antiInflammatoryCode,
+              'recheck_code': recheckCode.isEmpty ? null : recheckCode,
+              'notes': notes.trim().isEmpty ? null : notes.trim(),
+              'status': 'saved',
+              'updated_by_profile_id': profileId,
+            })
+            .eq('id', cowVisitId),
+      );
+    } on PostgrestException catch (error) {
+      if (error.code == '23505') {
+        throw DuplicateCowNumberException(cowNumber);
+      }
+      rethrow;
+    }
+
+    await _upsertCowVisitTextFlag(
+      cowVisitId: cowVisitId,
+      flagKey: 'group_label',
+      value: groupLabel.trim(),
+    );
+  }
+
+  Future<void> softDeleteCowVisit({
+    required String cowVisitId,
+  }) async {
+    if (_client == null) {
+      return;
+    }
+
+    final profileId = await _fetchCurrentProfileId();
     await _withTimeout(
-      label: 'cow_visits.update_basic',
+      label: 'cow_visits.soft_delete',
       future: _client!
           .from('cow_visits')
           .update({
-            'soles_count': solesCount,
-            'bandages_count': bandagesCount,
-            'antibiotic_code': antibiotic ? 'yes' : '',
-            'anti_inflammatory_code': antiInflammatory ? 'yes' : '',
-            'notes': notes.trim().isEmpty ? null : notes.trim(),
-            'status': 'saved',
+            'status': 'deleted',
             'updated_by_profile_id': profileId,
+            'deleted_at': DateTime.now().toUtc().toIso8601String(),
           })
           .eq('id', cowVisitId),
     );
@@ -859,13 +973,62 @@ class SupabaseService {
       sessionId: row['session_id'] as String,
       cowNumber: _toInt(row['cow_number']),
       visitDate: DateTime.parse(row['visit_date'] as String).toLocal(),
+      groupLabel: '',
+      laminitisCode: (row['laminitis_code'] as String? ?? '').trim(),
+      corkscrewCode: _toNullableInt(row['corkscrew_code']),
       solesCount: _toInt(row['soles_count']),
       bandagesCount: _toInt(row['bandages_count']),
       antibioticCode: (row['antibiotic_code'] as String? ?? '').trim(),
       antiInflammatoryCode:
           (row['anti_inflammatory_code'] as String? ?? '').trim(),
+      recheckCode: (row['recheck_code'] as String? ?? '').trim(),
       notes: row['notes'] as String? ?? '',
       status: row['status'] as String? ?? 'draft',
+    );
+  }
+
+  Future<void> _upsertCowVisitTextFlag({
+    required String cowVisitId,
+    required String flagKey,
+    required String value,
+  }) async {
+    final existingRows = await _withTimeout<List<dynamic>>(
+      label: 'cow_visit_flags.select_existing_text_flag',
+      future: _client!
+          .from('cow_visit_flags')
+          .select('id')
+          .eq('cow_visit_id', cowVisitId)
+          .eq('flag_key', flagKey)
+          .limit(1),
+    );
+
+    if (existingRows.isEmpty) {
+      if (value.isEmpty) {
+        return;
+      }
+
+      await _withTimeout(
+        label: 'cow_visit_flags.insert_text_flag',
+        future: _client!
+            .from('cow_visit_flags')
+            .insert({
+              'cow_visit_id': cowVisitId,
+              'flag_key': flagKey,
+              'flag_value_text': value,
+            }),
+      );
+      return;
+    }
+
+    final flagId = (existingRows.first as Map<String, dynamic>)['id'] as String;
+    await _withTimeout(
+      label: 'cow_visit_flags.update_text_flag',
+      future: _client!
+          .from('cow_visit_flags')
+          .update({
+            'flag_value_text': value.isEmpty ? null : value,
+          })
+          .eq('id', flagId),
     );
   }
 }
@@ -888,6 +1051,13 @@ int _toInt(dynamic value) {
     return int.tryParse(value) ?? 0;
   }
   return 0;
+}
+
+int? _toNullableInt(dynamic value) {
+  if (value == null) {
+    return null;
+  }
+  return _toInt(value);
 }
 
 String _buildMedicationLabel({

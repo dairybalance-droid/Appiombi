@@ -119,6 +119,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                   '?cowVisitId=${Uri.encodeComponent(visit.id)}'
                   '&sessionId=${Uri.encodeComponent(widget.sessionId)}'
                   '&sessionType=${Uri.encodeComponent(data.session.sessionTypeLabel)}'
+                  '&farmName=${Uri.encodeComponent(widget.farmName)}'
                   '&cowNumber=${Uri.encodeComponent(cowNumber.toString())}',
                 );
                 await _reloadSessionData();
@@ -192,6 +193,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
       '?cowVisitId=${Uri.encodeComponent(cowVisitId)}'
       '&sessionId=${Uri.encodeComponent(widget.sessionId)}'
       '&sessionType=${Uri.encodeComponent(sessionTypeLabel)}'
+      '&farmName=${Uri.encodeComponent(widget.farmName)}'
       '&cowNumber=${Uri.encodeComponent(cowNumber.toString())}'
       '&mode=edit',
     );

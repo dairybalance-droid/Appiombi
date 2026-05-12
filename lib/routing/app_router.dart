@@ -57,6 +57,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           sessionId: state.uri.queryParameters['sessionId'],
           sessionType: state.uri.queryParameters['sessionType'],
           cowNumber: state.uri.queryParameters['cowNumber'],
+          farmName: state.uri.queryParameters['farmName'],
           isEditing: state.uri.queryParameters['mode'] == 'edit',
         ),
       ),
