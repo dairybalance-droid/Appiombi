@@ -240,6 +240,10 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
         context: context,
         sessionType: session.sessionTypeLabel,
       );
+      if (!mounted) {
+        return;
+      }
+      context.go('/farms/${widget.farmId}');
     } catch (error) {
       if (!mounted) {
         return;
@@ -265,22 +269,28 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
       appBar: AppBar(
         title: Text(fallbackType),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _sessionClosing
-            ? null
-            : () async {
-                final data = await _sessionFuture;
-                if (!mounted) {
-                  return;
-                }
-                await _openAddCowDialog(data);
-              },
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: const Icon(Icons.add_rounded),
+      floatingActionButton: FutureBuilder<_SessionDetailData>(
+        future: _sessionFuture,
+        builder: (context, snapshot) {
+          final sessionClosed = snapshot.data?.session.status == 'closed';
+          return FloatingActionButton(
+            onPressed: _sessionClosing || sessionClosed
+                ? null
+                : () async {
+                    final data = await _sessionFuture;
+                    if (!mounted) {
+                      return;
+                    }
+                    await _openAddCowDialog(data);
+                  },
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: const Icon(Icons.add_rounded),
+          );
+        },
       ),
       body: FutureBuilder<_SessionDetailData>(
         future: _sessionFuture,
@@ -459,8 +469,12 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                   ),
                   const SizedBox(height: 16),
                   AppPrimaryButton(
-                    label: 'Fine sessione',
-                    onPressed: _sessionClosing ? null : () => _closeSession(session),
+                    label: session.status == 'closed'
+                        ? 'Sessione chiusa'
+                        : 'Fine sessione',
+                    onPressed: _sessionClosing || session.status == 'closed'
+                        ? null
+                        : () => _closeSession(session),
                   ),
                 ],
               ),
@@ -732,7 +746,7 @@ Future<void> _showSessionSummaryDialog({
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: const Text('Chiudi'),
+                    child: const Text('Torna alla dashboard azienda'),
                   ),
                 ),
               ],

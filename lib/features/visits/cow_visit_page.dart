@@ -134,8 +134,140 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     });
   }
 
+  Future<void> _editVisitDateFromTopBar() async {
+    await _selectVisitDate();
+    if (!mounted) {
+      return;
+    }
+    await _saveCurrentVisit();
+  }
+
+  Future<void> _editCowNumberFromTopBar() async {
+    final controller = TextEditingController(text: _cowNumberController.text.trim());
+    String? inlineError;
+    bool saving = false;
+    final previousValue = _cowNumberController.text.trim();
+
+    final updatedValue = await showDialog<String?>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            Future<void> submit() async {
+              final rawValue = controller.text.trim();
+              if (!RegExp(r'^-?\d+$').hasMatch(rawValue)) {
+                setDialogState(() {
+                  inlineError = 'Inserisci un numero intero valido.';
+                });
+                return;
+              }
+
+              setDialogState(() {
+                inlineError = null;
+                saving = true;
+              });
+              Navigator.of(dialogContext).pop(rawValue);
+            }
+
+            return AlertDialog(
+              title: const Text('Modifica numero capo'),
+              content: TextField(
+                controller: controller,
+                autofocus: true,
+                enabled: !saving,
+                keyboardType: const TextInputType.numberWithOptions(
+                  signed: true,
+                  decimal: false,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Capo',
+                  hintText: 'Es. 101 o -12',
+                  errorText: inlineError,
+                ),
+                onSubmitted: (_) => submit(),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: saving
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(null),
+                  child: const Text('Annulla'),
+                ),
+                ElevatedButton(
+                  onPressed: saving ? null : submit,
+                  child: Text(saving ? 'Attendere...' : 'OK'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (!mounted || updatedValue == null || updatedValue == previousValue) {
+      return;
+    }
+
+    _cowNumberController.text = updatedValue;
+    setState(() {
+      _cowNumberError = null;
+    });
+
+    final saved = await _saveCurrentVisit();
+    if (!mounted) {
+      return;
+    }
+
+    if (!saved) {
+      _cowNumberController.text = previousValue;
+      setState(() {});
+      return;
+    }
+
+    setState(() {});
+  }
+
+  Future<void> _navigateCycleBackward() async {
+    switch (_currentSection) {
+      case _VisitSection.generalData:
+        await _changeSection(_VisitSection.otherInfo);
+      case _VisitSection.hoofMap:
+        await _changeSection(_VisitSection.generalData);
+      case _VisitSection.otherInfo:
+        await _changeSection(_VisitSection.hoofMap);
+    }
+  }
+
+  Future<void> _navigateCycleForward() async {
+    switch (_currentSection) {
+      case _VisitSection.generalData:
+        await _changeSection(_VisitSection.hoofMap);
+      case _VisitSection.hoofMap:
+        await _changeSection(_VisitSection.otherInfo);
+      case _VisitSection.otherInfo:
+        await _changeSection(_VisitSection.generalData);
+    }
+  }
+
   Future<bool> _saveCurrentVisit() async {
-    if (!_formKey.currentState!.validate()) {
+    final formState = _formKey.currentState;
+    if (formState != null && !formState.validate()) {
+      return false;
+    }
+
+    final rawCowNumber = _cowNumberController.text.trim();
+    if (rawCowNumber.isEmpty) {
+      setState(() {
+        _cowNumberError = 'Capo obbligatorio.';
+      });
+      return false;
+    }
+
+    if (!RegExp(r'^-?\d+$').hasMatch(rawCowNumber)) {
+      setState(() {
+        _cowNumberError = 'Inserisci un numero intero valido.';
+      });
       return false;
     }
 
@@ -147,7 +279,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     }
 
     final visitDate = _visitDate ?? DateTime.now();
-    final cowNumber = int.parse(_cowNumberController.text.trim());
+    final cowNumber = int.parse(rawCowNumber);
 
     setState(() {
       _saving = true;
@@ -223,6 +355,12 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
   void _goToSessionList() {
     if (widget.sessionId == null) {
       context.go('/farms/${widget.farmId}');
+      return;
+    }
+
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop(true);
       return;
     }
 
@@ -326,7 +464,6 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     }
 
     if (result == null) {
-      _goToSessionList();
       return;
     }
 
@@ -467,9 +604,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            final lesionItems = zone.popupKind == HoofPopupKind.horn
-                ? hornLesionTypeItems()
-                : skinLesionTypeItems();
+            final lesionOptions = zone.popupKind == HoofPopupKind.horn
+                ? _hornLesionTypeOptions
+                : _skinLesionTypeOptions;
 
             Future<void> save() async {
               final navigator = Navigator.of(dialogContext);
@@ -531,30 +668,38 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    initialValue: lesionTypeCode,
-                    items: lesionItems,
-                    onChanged: saving
+                  Text(
+                    'Tipologia',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  _OptionWrap(
+                    options: lesionOptions,
+                    selectedValue: lesionTypeCode,
+                    onSelected: saving
                         ? null
                         : (value) {
-                            setDialogState(() => lesionTypeCode = value ?? '');
+                            setDialogState(() => lesionTypeCode = value);
                           },
-                    decoration: const InputDecoration(
-                      labelText: 'Tipologia',
-                    ),
                   ),
                   const SizedBox(height: 14),
-                  DropdownButtonFormField<String>(
-                    initialValue: extensionCode,
-                    items: extensionItems(),
-                    onChanged: saving
+                  Text(
+                    'Estensione',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  _OptionWrap(
+                    options: _extensionOptionItems,
+                    selectedValue: extensionCode,
+                    onSelected: saving
                         ? null
                         : (value) {
-                            setDialogState(() => extensionCode = value ?? '');
+                            setDialogState(() => extensionCode = value);
                           },
-                    decoration: const InputDecoration(
-                      labelText: 'Estensione',
-                    ),
                   ),
                 ],
               ),
@@ -580,11 +725,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
       return;
     }
 
-    if (_currentSection == _VisitSection.generalData) {
-      final saved = await _saveCurrentVisit();
-      if (!saved || !mounted) {
-        return;
-      }
+    final saved = await _saveCurrentVisit();
+    if (!saved || !mounted) {
+      return;
     }
 
     if (!mounted) {
@@ -612,35 +755,6 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
         );
       },
     );
-  }
-
-  PreferredSizeWidget? _buildAppBar() {
-    switch (_currentSection) {
-      case _VisitSection.generalData:
-        return AppBar(
-          title: const Text('Dati generici'),
-          actions: [
-            IconButton(
-              onPressed: _showVoiceInfo,
-              tooltip: 'Microfono',
-              icon: const Icon(Icons.mic_none_rounded),
-            ),
-          ],
-        );
-      case _VisitSection.hoofMap:
-        return null;
-      case _VisitSection.otherInfo:
-        return AppBar(
-          title: const Text('Altre info'),
-          actions: [
-            IconButton(
-              onPressed: _showVoiceInfo,
-              tooltip: 'Microfono',
-              icon: const Icon(Icons.mic_none_rounded),
-            ),
-          ],
-        );
-    }
   }
 
   Widget _buildBottomBar(_CowVisitPageData data) {
@@ -687,7 +801,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                   child: ElevatedButton.icon(
                     onPressed: _saving ? null : _openNewCowFromRightAction,
                     icon: const Icon(Icons.arrow_forward_rounded),
-                    label: const Text('Successivo'),
+                    label: const Text('Prossima vacca'),
                   ),
                 ),
               ],
@@ -696,88 +810,59 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
         );
       case _VisitSection.hoofMap:
         return _MapBottomBar(
-          onBack: () => _changeSection(_VisitSection.generalData),
-          onMic: _showVoiceInfo,
-          onNext: () => _changeSection(_VisitSection.otherInfo),
-          busy: _savingMap,
+          onNextCow: _savingMap ? null : _openNewCowFromRightAction,
+          busy: _savingMap || _saving,
         );
       case _VisitSection.otherInfo:
         return _MapBottomBar(
-          onBack: () => _changeSection(_VisitSection.hoofMap),
-          onMic: _showVoiceInfo,
-          onNext: () => _changeSection(_VisitSection.generalData),
-          busy: false,
-          nextLabel: 'Dati generici',
+          onNextCow: _saving ? null : _openNewCowFromRightAction,
+          busy: _saving,
         );
     }
   }
 
-  Widget _buildHeader(String sessionType) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildVisitTopBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      sessionType,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Capo ${_cowNumberController.text.trim().isEmpty ? '-' : _cowNumberController.text.trim()}',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w800),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F6F6),
-                  border: Border.all(color: AppColors.border),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  _currentSection.label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
-            ],
+          _TopBarIconButton(
+            icon: Icons.arrow_back_ios_new_rounded,
+            onTap: _saving ? null : _navigateCycleBackward,
           ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              _SectionTab(
-                label: 'Dati generici',
-                active: _currentSection == _VisitSection.generalData,
-                onTap: () => _changeSection(_VisitSection.generalData),
-              ),
-              _SectionTab(
-                label: 'Mappa unghioni',
-                active: _currentSection == _VisitSection.hoofMap,
-                onTap: () => _changeSection(_VisitSection.hoofMap),
-              ),
-              _SectionTab(
-                label: 'Altre info',
-                active: _currentSection == _VisitSection.otherInfo,
-                onTap: () => _changeSection(_VisitSection.otherInfo),
-              ),
-            ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: _TopBarValueChip(
+              label: _formatDate(_visitDate ?? DateTime.now()),
+              icon: Icons.calendar_today_rounded,
+              onTap: _saving ? null : _editVisitDateFromTopBar,
+            ),
+          ),
+          const SizedBox(width: 8),
+          _TopBarIconButton(
+            icon: Icons.mic_none_rounded,
+            onTap: _showVoiceInfo,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _TopBarValueChip(
+              label: _cowNumberController.text.trim().isEmpty
+                  ? 'Capo'
+                  : 'Capo ${_cowNumberController.text.trim()}',
+              icon: Icons.pets_outlined,
+              errorText: _cowNumberError,
+              onTap: _saving ? null : _editCowNumberFromTopBar,
+            ),
+          ),
+          const SizedBox(width: 8),
+          _TopBarIconButton(
+            icon: Icons.arrow_forward_ios_rounded,
+            onTap: _saving ? null : _navigateCycleForward,
           ),
         ],
       ),
@@ -788,7 +873,15 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        _buildHeader(sessionType),
+        _buildVisitTopBar(),
+        const SizedBox(height: 12),
+        Text(
+          sessionType,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
+        ),
         const SizedBox(height: 16),
         AppCard(
           child: Column(
@@ -944,13 +1037,16 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: _CowNumberBox(
-                  cowNumber: _cowNumberController.text.trim().isEmpty
-                      ? '-'
-                      : _cowNumberController.text.trim(),
-                ),
+              _buildVisitTopBar(),
+              const SizedBox(height: 12),
+              Text(
+                widget.sessionType?.trim().isNotEmpty == true
+                    ? widget.sessionType!
+                    : 'Sessione operativa',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textSecondary,
+                    ),
               ),
               const SizedBox(height: 10),
               Align(
@@ -1011,9 +1107,17 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        _buildHeader(widget.sessionType?.trim().isNotEmpty == true
-            ? widget.sessionType!
-            : 'Sessione operativa'),
+        _buildVisitTopBar(),
+        const SizedBox(height: 12),
+        Text(
+          widget.sessionType?.trim().isNotEmpty == true
+              ? widget.sessionType!
+              : 'Sessione operativa',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
+        ),
         const SizedBox(height: 16),
         AppCard(
           child: Column(
@@ -1044,7 +1148,6 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
         : 'Sessione operativa';
 
     return Scaffold(
-      appBar: _buildAppBar(),
       bottomNavigationBar: FutureBuilder<_CowVisitPageData>(
         future: _visitFuture,
         builder: (context, snapshot) {
@@ -1120,44 +1223,6 @@ class _NewVisitNavigationResult {
 
   final String cowVisitId;
   final int cowNumber;
-}
-
-class _SectionTab extends StatelessWidget {
-  const _SectionTab({
-    required this.label,
-    required this.active,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: active ? const Color(0xFFEFE6D9) : const Color(0xFFF3F6F6),
-          border: Border.all(
-            color: active ? AppColors.primary : AppColors.border,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: active ? AppColors.primary : AppColors.textSecondary,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _DateField extends StatelessWidget {
@@ -1270,60 +1335,14 @@ class _AppDropdownField<T> extends StatelessWidget {
   }
 }
 
-class _CowNumberBox extends StatelessWidget {
-  const _CowNumberBox({required this.cowNumber});
-
-  final String cowNumber;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 118,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFF121212), width: 2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Capo',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-          ),
-          const SizedBox(height: 6),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              cowNumber,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _MapBottomBar extends StatelessWidget {
   const _MapBottomBar({
-    required this.onBack,
-    required this.onMic,
-    required this.onNext,
+    required this.onNextCow,
     required this.busy,
-    this.nextLabel = 'Altre info',
   });
 
-  final VoidCallback onBack;
-  final VoidCallback onMic;
-  final VoidCallback onNext;
+  final VoidCallback? onNextCow;
   final bool busy;
-  final String nextLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -1340,38 +1359,148 @@ class _MapBottomBar extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: OutlinedButton.icon(
-                onPressed: busy ? null : onBack,
-                icon: const Icon(Icons.arrow_back_rounded),
-                label: const Text('Dati generici'),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Container(
-              width: 54,
-              height: 46,
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.white,
-              ),
-              child: IconButton(
-                onPressed: busy ? null : onMic,
-                icon: const Icon(Icons.mic_none_rounded),
-                tooltip: 'Microfono',
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
               child: ElevatedButton.icon(
-                onPressed: busy ? null : onNext,
-                icon: const Icon(Icons.arrow_forward_rounded),
-                label: Text(nextLabel),
+                onPressed: busy ? null : onNextCow,
+                icon: const Icon(Icons.add_circle_outline_rounded),
+                label: const Text('Prossima vacca'),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _TopBarIconButton extends StatelessWidget {
+  const _TopBarIconButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: onTap == null ? const Color(0xFFF2F4F5) : Colors.white,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, size: 18),
+      ),
+    );
+  }
+}
+
+class _TopBarValueChip extends StatelessWidget {
+  const _TopBarValueChip({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    this.errorText,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback? onTap;
+  final String? errorText;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasError = errorText != null && errorText!.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onTap,
+          child: Container(
+            height: 42,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(
+                color: hasError ? AppColors.danger : AppColors.border,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, size: 16, color: AppColors.textSecondary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (hasError) ...[
+          const SizedBox(height: 4),
+          Text(
+            errorText!,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.danger,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _OptionWrap extends StatelessWidget {
+  const _OptionWrap({
+    required this.options,
+    required this.selectedValue,
+    required this.onSelected,
+  });
+
+  final List<_PopupOption> options;
+  final String selectedValue;
+  final ValueChanged<String>? onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final option in options)
+          ChoiceChip(
+            label: Text(option.label.isEmpty ? 'Vuoto' : option.label),
+            selected: option.value == selectedValue,
+            onSelected: onSelected == null ? null : (_) => onSelected!(option.value),
+            selectedColor: const Color(0xFFEFE6D9),
+            side: BorderSide(
+              color: option.value == selectedValue
+                  ? AppColors.primary
+                  : AppColors.border,
+            ),
+            labelStyle: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: option.value == selectedValue
+                  ? AppColors.primary
+                  : AppColors.textPrimary,
+            ),
+          ),
+      ],
     );
   }
 }
@@ -1382,6 +1511,39 @@ String _formatDate(DateTime value) {
   final year = value.year.toString();
   return '$day/$month/$year';
 }
+
+class _PopupOption {
+  const _PopupOption(this.value, this.label);
+
+  final String value;
+  final String label;
+}
+
+const List<_PopupOption> _hornLesionTypeOptions = [
+  _PopupOption('', ''),
+  _PopupOption('hemorrhage', 'Emorragia'),
+  _PopupOption('ulcer', 'Ulcera'),
+  _PopupOption('protrusion', 'Protrusione'),
+  _PopupOption('pus', 'Pus'),
+  _PopupOption('necrosis', 'Necrosi'),
+  _PopupOption('deep_plane', 'Piani profondi'),
+];
+
+const List<_PopupOption> _skinLesionTypeOptions = [
+  _PopupOption('', ''),
+  _PopupOption('m1', '1 - Precoce'),
+  _PopupOption('m2', '2 - Acuta'),
+  _PopupOption('m3', '3 - Guarigione'),
+  _PopupOption('m4', '4 - Cronica'),
+  _PopupOption('m41', '4.1 - Riacutizzata'),
+];
+
+const List<_PopupOption> _extensionOptionItems = [
+  _PopupOption('', ''),
+  _PopupOption('focal', 'Focale'),
+  _PopupOption('broad', 'Ampio'),
+  _PopupOption('multi', 'Multi-zona'),
+];
 
 const List<DropdownMenuItem<String>> _laminitisOptions = [
   DropdownMenuItem(value: '', child: Text('')),
@@ -1425,3 +1587,4 @@ const List<DropdownMenuItem<String>> _recheckOptions = [
   DropdownMenuItem(value: '30d', child: Text('30 gg')),
   DropdownMenuItem(value: '90d', child: Text('90 gg')),
 ];
+
