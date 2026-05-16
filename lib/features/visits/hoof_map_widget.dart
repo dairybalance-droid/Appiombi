@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_responsive.dart';
 import 'hoof_map_models.dart';
 
 class HoofPairMap extends StatelessWidget {
@@ -68,46 +69,59 @@ class HoofPairMap extends StatelessWidget {
                         painterConstraints.maxWidth,
                         painterConstraints.maxHeight,
                       );
-                      return GestureDetector(
+                      final mapSurface = GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTapUp: (details) {
-                        final localPosition = details.localPosition;
-                        final exactHit = zones.reversed.where((zone) {
-                          final path = zone.buildVisiblePath(size);
-                          return path.contains(localPosition);
-                        });
+                          final localPosition = details.localPosition;
+                          final exactHit = zones.reversed.where((zone) {
+                            final path = zone.buildVisiblePath(size);
+                            return path.contains(localPosition);
+                          });
 
-                        final hitZone = exactHit.isNotEmpty
-                            ? exactHit.first
-                            : zones.reversed.firstWhere(
-                                (zone) => zone.buildHitPath(size).contains(localPosition),
-                                orElse: () => const HoofMapZoneDefinition(
-                                  zoneCode: '',
-                                  zoneFamily: HoofZoneFamily.horn,
-                                  anatomicalArea: '',
-                                  anatomicalPosition: '',
-                                  footLabel: '',
-                                  popupKind: HoofPopupKind.horn,
-                                  shapeKind: HoofShapeKind.polygon,
-                                  visiblePoints: [],
-                                  hitInflation: 0,
-                                ),
-                              );
+                          final hitZone = exactHit.isNotEmpty
+                              ? exactHit.first
+                              : zones.reversed.firstWhere(
+                                  (zone) => zone.buildHitPath(size).contains(localPosition),
+                                  orElse: () => const HoofMapZoneDefinition(
+                                    zoneCode: '',
+                                    zoneFamily: HoofZoneFamily.horn,
+                                    anatomicalArea: '',
+                                    anatomicalPosition: '',
+                                    footLabel: '',
+                                    popupKind: HoofPopupKind.horn,
+                                    shapeKind: HoofShapeKind.polygon,
+                                    visiblePoints: [],
+                                    hitInflation: 0,
+                                  ),
+                                );
 
-                        if (hitZone.zoneCode.isEmpty) {
-                          return;
-                        }
+                          if (hitZone.zoneCode.isEmpty) {
+                            return;
+                          }
 
-                        onZoneTap(hitZone);
+                          onZoneTap(hitZone);
                         },
                         child: CustomPaint(
                           painter: _HoofPairPainter(
                             zones: zones,
                             observations: observations,
-                            showLabels: !compact,
+                            showLabels: !compact && !AppResponsive.isCompact(context),
                           ),
                           child: const SizedBox.expand(),
                         ),
+                      );
+
+                      if (!AppResponsive.isCompact(context)) {
+                        return mapSurface;
+                      }
+
+                      return InteractiveViewer(
+                        minScale: 1,
+                        maxScale: 1.35,
+                        scaleEnabled: true,
+                        panEnabled: true,
+                        constrained: true,
+                        child: mapSurface,
                       );
                     },
                   ),

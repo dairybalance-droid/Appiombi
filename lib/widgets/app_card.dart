@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_responsive.dart';
+
 class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
@@ -12,9 +14,8 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width < 520;
     final cardChild = Padding(
-      padding: EdgeInsets.all(compact ? 14 : 18),
+      padding: AppResponsive.cardPadding(context),
       child: child,
     );
 
@@ -22,7 +23,9 @@ class AppCard extends StatelessWidget {
       child: onTap == null
           ? cardChild
           : InkWell(
-              borderRadius: BorderRadius.circular(compact ? 10 : 12),
+              borderRadius: BorderRadius.circular(
+                AppResponsive.isCompact(context) ? 10 : 12,
+              ),
               onTap: onTap,
               child: cardChild,
             ),

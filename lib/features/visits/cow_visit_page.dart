@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../services/supabase_service.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_responsive.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/cow_number_keypad_dialog.dart';
 import '../../widgets/error_view.dart';
@@ -482,122 +483,155 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     String extensionCode = existing?.extensionCode ?? '';
     bool saving = false;
 
+    final lesionOptions = zone.popupKind == HoofPopupKind.horn
+        ? _hornLesionTypeOptions
+        : _skinLesionTypeOptions;
+    final useBottomSheet = AppResponsive.isCompact(context);
+
+    Widget buildEditor(
+      BuildContext popupContext,
+      StateSetter setDialogState,
+      VoidCallback closePopup,
+    ) {
+      Future<void> save() async {
+        final active = lesionTypeCode.isNotEmpty || extensionCode.isNotEmpty;
+        setDialogState(() => saving = true);
+
+        setState(() {
+          if (active) {
+            _hoofMapObservations[zone.zoneCode] = HoofZoneObservation(
+              zoneCode: zone.zoneCode,
+              zoneFamily: zone.zoneFamily,
+              anatomicalArea: zone.anatomicalArea,
+              anatomicalPosition: zone.anatomicalPosition,
+              popupKind: zone.popupKind,
+              lesionTypeCode: lesionTypeCode,
+              extensionCode: extensionCode,
+              isActive: true,
+            );
+          } else {
+            _hoofMapObservations.remove(zone.zoneCode);
+          }
+        });
+
+        await _persistHoofMap();
+        if (!mounted) {
+          return;
+        }
+        closePopup();
+      }
+
+      Future<void> remove() async {
+        setDialogState(() => saving = true);
+        setState(() {
+          _hoofMapObservations.remove(zone.zoneCode);
+        });
+        await _persistHoofMap();
+        if (!mounted) {
+          return;
+        }
+        closePopup();
+      }
+
+      return _ResponsiveZonePopup(
+        title: hoofPopupTitle(zone.popupKind),
+        compact: AppResponsive.isCompact(popupContext),
+        maxHeight: AppResponsive.dialogMaxHeight(popupContext),
+        zoneCode: zone.zoneCode,
+        anatomicalLabel: '${zone.anatomicalArea} · ${zone.anatomicalPosition}',
+        onClose: closePopup,
+        actions: [
+          TextButton(
+            onPressed: saving ? null : remove,
+            child: const Text('Rimuovi'),
+          ),
+          ElevatedButton(
+            onPressed: saving ? null : save,
+            child: Text(saving ? 'Attendere...' : 'Conferma'),
+          ),
+        ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Tipologia',
+              style: Theme.of(popupContext).textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            _OptionWrap(
+              options: lesionOptions,
+              selectedValue: lesionTypeCode,
+              onSelected: saving
+                  ? null
+                  : (value) {
+                      setDialogState(() => lesionTypeCode = value);
+                    },
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Estensione',
+              style: Theme.of(popupContext).textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            _OptionWrap(
+              options: _extensionOptionItems,
+              selectedValue: extensionCode,
+              onSelected: saving
+                  ? null
+                  : (value) {
+                      setDialogState(() => extensionCode = value);
+                    },
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (useBottomSheet) {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: Colors.transparent,
+        builder: (sheetContext) {
+          return StatefulBuilder(
+            builder: (popupContext, setDialogState) {
+              return buildEditor(
+                popupContext,
+                setDialogState,
+                () => Navigator.of(sheetContext).pop(),
+              );
+            },
+          );
+        },
+      );
+      return;
+    }
+
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            final lesionOptions = zone.popupKind == HoofPopupKind.horn
-                ? _hornLesionTypeOptions
-                : _skinLesionTypeOptions;
-
-            Future<void> save() async {
-              final navigator = Navigator.of(dialogContext);
-              final active = lesionTypeCode.isNotEmpty || extensionCode.isNotEmpty;
-              setDialogState(() => saving = true);
-
-              setState(() {
-                if (active) {
-                  _hoofMapObservations[zone.zoneCode] = HoofZoneObservation(
-                    zoneCode: zone.zoneCode,
-                    zoneFamily: zone.zoneFamily,
-                    anatomicalArea: zone.anatomicalArea,
-                    anatomicalPosition: zone.anatomicalPosition,
-                    popupKind: zone.popupKind,
-                    lesionTypeCode: lesionTypeCode,
-                    extensionCode: extensionCode,
-                    isActive: true,
-                  );
-                } else {
-                  _hoofMapObservations.remove(zone.zoneCode);
-                }
-              });
-
-              await _persistHoofMap();
-              if (!mounted) {
-                return;
-              }
-              navigator.pop();
-            }
-
-            Future<void> remove() async {
-              final navigator = Navigator.of(dialogContext);
-              setDialogState(() => saving = true);
-              setState(() {
-                _hoofMapObservations.remove(zone.zoneCode);
-              });
-              await _persistHoofMap();
-              if (!mounted) {
-                return;
-              }
-              navigator.pop();
-            }
-
-            return AlertDialog(
-              title: Text(hoofPopupTitle(zone.popupKind)),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    zone.zoneCode,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${zone.anatomicalArea} · ${zone.anatomicalPosition}',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Tipologia',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  _OptionWrap(
-                    options: lesionOptions,
-                    selectedValue: lesionTypeCode,
-                    onSelected: saving
-                        ? null
-                        : (value) {
-                            setDialogState(() => lesionTypeCode = value);
-                          },
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Estensione',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  _OptionWrap(
-                    options: _extensionOptionItems,
-                    selectedValue: extensionCode,
-                    onSelected: saving
-                        ? null
-                        : (value) {
-                            setDialogState(() => extensionCode = value);
-                          },
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: saving ? null : remove,
-                  child: const Text('Rimuovi'),
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: StatefulBuilder(
+            builder: (popupContext, setDialogState) {
+              return ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: AppResponsive.dialogMaxWidth(popupContext),
+                  maxHeight: AppResponsive.dialogMaxHeight(popupContext),
                 ),
-                ElevatedButton(
-                  onPressed: saving ? null : save,
-                  child: Text(saving ? 'Attendere...' : 'Conferma'),
+                child: buildEditor(
+                  popupContext,
+                  setDialogState,
+                  () => Navigator.of(dialogContext).pop(),
                 ),
-              ],
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
@@ -653,7 +687,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
   Widget _buildVisitTopBar() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isPhone = constraints.maxWidth < 520;
+        final isPhone = AppResponsive.isCompact(context);
         return Container(
           padding: EdgeInsets.symmetric(
             horizontal: isPhone ? 8 : 12,
@@ -717,16 +751,13 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
   Widget _buildGeneralDataSection(String sessionType) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isPhone = constraints.maxWidth < 520;
-        final fieldGap = isPhone ? 10.0 : 14.0;
+        final isPhone = AppResponsive.isCompact(context);
+        final fieldGap = AppResponsive.compactGap(context);
         return ListView(
-          padding: EdgeInsets.fromLTRB(
-            isPhone ? 12 : 20,
-            isPhone ? 12 : 20,
-            isPhone ? 12 : 20,
-            isPhone ? 20 : 20,
+          padding: AppResponsive.pagePadding(context).copyWith(
+            bottom: 20,
           ),
-      children: [
+        children: [
         _buildVisitTopBar(),
         SizedBox(height: isPhone ? 8 : 12),
         Text(
@@ -776,41 +807,44 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                 compact: isPhone,
               ),
               SizedBox(height: fieldGap),
-              Row(
-                children: [
-                  Expanded(
-                    child: _CounterField(
-                      label: 'Suole',
-                      value: _solesCount,
-                      compact: isPhone,
-                      onIncrement: () => setState(() => _solesCount += 1),
-                      onDecrement: () {
-                        setState(() {
-                          if (_solesCount > 0) {
-                            _solesCount -= 1;
-                          }
-                        });
-                      },
+                Flex(
+                  direction: isPhone ? Axis.vertical : Axis.horizontal,
+                  children: [
+                    Expanded(
+                      flex: isPhone ? 0 : 1,
+                      child: _CounterField(
+                        label: 'Suole',
+                        value: _solesCount,
+                        compact: isPhone,
+                        onIncrement: () => setState(() => _solesCount += 1),
+                        onDecrement: () {
+                          setState(() {
+                            if (_solesCount > 0) {
+                              _solesCount -= 1;
+                            }
+                          });
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _CounterField(
-                      label: 'Bende',
-                      value: _bandagesCount,
-                      compact: isPhone,
-                      onIncrement: () => setState(() => _bandagesCount += 1),
-                      onDecrement: () {
-                        setState(() {
-                          if (_bandagesCount > 0) {
-                            _bandagesCount -= 1;
-                          }
-                        });
-                      },
+                    SizedBox(width: isPhone ? 0 : 12, height: isPhone ? 12 : 0),
+                    Expanded(
+                      flex: isPhone ? 0 : 1,
+                      child: _CounterField(
+                        label: 'Bende',
+                        value: _bandagesCount,
+                        compact: isPhone,
+                        onIncrement: () => setState(() => _bandagesCount += 1),
+                        onDecrement: () {
+                          setState(() {
+                            if (_bandagesCount > 0) {
+                              _bandagesCount -= 1;
+                            }
+                          });
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
               SizedBox(height: fieldGap),
               _AppDropdownField<String>(
                 label: 'Antibiotico',
@@ -863,18 +897,16 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
   Widget _buildHoofMapSection() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isPhone = constraints.maxWidth < 520;
+        final isPhone = AppResponsive.isCompact(context);
         final mapWidth = constraints.maxWidth > 860
             ? 360.0
             : (constraints.maxWidth - (isPhone ? 8 : 24)).clamp(260.0, 420.0);
         return SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(
-            isPhone ? 10 : 16,
-            isPhone ? 12 : 16,
-            isPhone ? 10 : 16,
-            20,
-          ),
-          child: Column(
+            padding: AppResponsive.pagePadding(context).copyWith(
+              left: isPhone ? 10 : 16,
+              right: isPhone ? 10 : 16,
+            ),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildVisitTopBar(),
@@ -950,14 +982,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
   Widget _buildOtherInfoSection() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isPhone = constraints.maxWidth < 520;
+        final isPhone = AppResponsive.isCompact(context);
         return ListView(
-      padding: EdgeInsets.fromLTRB(
-        isPhone ? 12 : 20,
-        isPhone ? 12 : 20,
-        isPhone ? 12 : 20,
-        20,
-      ),
+      padding: AppResponsive.pagePadding(context).copyWith(bottom: 20),
       children: [
         _buildVisitTopBar(),
         SizedBox(height: isPhone ? 8 : 12),
@@ -1036,13 +1063,16 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
             );
           }
 
-          return Form(
-            key: _formKey,
-            child: switch (_currentSection) {
-              _VisitSection.generalData => _buildGeneralDataSection(sessionType),
-              _VisitSection.hoofMap => _buildHoofMapSection(),
-              _VisitSection.otherInfo => _buildOtherInfoSection(),
-            },
+          return SafeArea(
+            bottom: false,
+            child: Form(
+              key: _formKey,
+              child: switch (_currentSection) {
+                _VisitSection.generalData => _buildGeneralDataSection(sessionType),
+                _VisitSection.hoofMap => _buildHoofMapSection(),
+                _VisitSection.otherInfo => _buildOtherInfoSection(),
+              },
+            ),
           );
         },
       ),
@@ -1192,10 +1222,16 @@ class _VisitBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = AppResponsive.isCompact(context);
     return SafeArea(
       top: false,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+        padding: EdgeInsets.fromLTRB(
+          compact ? 10 : 16,
+          8,
+          compact ? 10 : 16,
+          compact ? 10 : 14,
+        ),
         decoration: const BoxDecoration(
           color: Colors.white,
           border: Border(
@@ -1223,7 +1259,7 @@ class _VisitBottomBar extends StatelessWidget {
             const SizedBox(width: 6),
             Expanded(
               child: SizedBox(
-                height: 54,
+                height: AppResponsive.minTouchTarget,
                 child: ElevatedButton(
                   onPressed: busy ? null : onNextCow,
                   style: ElevatedButton.styleFrom(
@@ -1293,9 +1329,10 @@ class _BottomCompactButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = danger ? AppColors.danger : AppColors.textPrimary;
+    final compact = AppResponsive.isCompact(context);
     return SizedBox(
-      width: label == null ? 52 : 72,
-      height: 54,
+      width: label == null ? (compact ? 48 : 52) : (compact ? 68 : 72),
+      height: AppResponsive.minTouchTarget,
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
@@ -1319,7 +1356,7 @@ class _BottomCompactButton extends StatelessWidget {
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: compact ? 9.5 : 10,
                       height: 1.05,
                       fontWeight: FontWeight.w700,
                       color: foreground,
@@ -1359,7 +1396,7 @@ class _TopBarValueChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           onTap: onTap,
           child: Container(
-            height: compact ? 34 : 40,
+            height: AppResponsive.topBarHeight(context),
             padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 10),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -1421,9 +1458,10 @@ class _OptionWrap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = AppResponsive.isCompact(context);
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: compact ? 6 : 8,
+      runSpacing: compact ? 6 : 8,
       children: [
         for (final option in options)
           ChoiceChip(
@@ -1444,6 +1482,135 @@ class _OptionWrap extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _ResponsiveZonePopup extends StatelessWidget {
+  const _ResponsiveZonePopup({
+    required this.title,
+    required this.zoneCode,
+    required this.anatomicalLabel,
+    required this.child,
+    required this.actions,
+    required this.onClose,
+    required this.compact,
+    required this.maxHeight,
+  });
+
+  final String title;
+  final String zoneCode;
+  final String anatomicalLabel;
+  final Widget child;
+  final List<Widget> actions;
+  final VoidCallback onClose;
+  final bool compact;
+  final double maxHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    final content = Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(compact ? 18 : 14),
+      ),
+      child: SafeArea(
+        top: false,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: AppResponsive.dialogMaxWidth(context),
+            maxHeight: maxHeight,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  compact ? 16 : 20,
+                  compact ? 12 : 16,
+                  compact ? 16 : 20,
+                  8,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: onClose,
+                      icon: const Icon(Icons.close_rounded),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ],
+                ),
+              ),
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(
+                    compact ? 16 : 20,
+                    0,
+                    compact ? 16 : 20,
+                    12,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        zoneCode,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        anatomicalLabel,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 16),
+                      child,
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(
+                  compact ? 12 : 16,
+                  10,
+                  compact ? 12 : 16,
+                  compact ? 10 : 14,
+                ),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    top: BorderSide(color: AppColors.border),
+                  ),
+                ),
+                child: Wrap(
+                  alignment: WrapAlignment.end,
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: actions,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (compact) {
+      return content;
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: content,
     );
   }
 }
