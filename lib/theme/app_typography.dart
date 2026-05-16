@@ -26,28 +26,28 @@ class AppTypography {
         color: AppColors.textPrimary,
       ),
       bodyLarge: base.bodyLarge?.copyWith(
-        fontSize: 15,
+        fontSize: 16,
         height: 1.35,
         color: AppColors.textPrimary,
       ),
       bodyMedium: base.bodyMedium?.copyWith(
-        fontSize: 15,
+        fontSize: 16,
         height: 1.3,
         color: AppColors.textPrimary,
       ),
       bodySmall: base.bodySmall?.copyWith(
-        fontSize: 13,
+        fontSize: 14,
         height: 1.25,
         color: AppColors.textSecondary,
       ),
       labelLarge: base.labelLarge?.copyWith(
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: FontWeight.w700,
         letterSpacing: 0.1,
         color: Colors.white,
       ),
       titleMedium: base.titleMedium?.copyWith(
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
       ),

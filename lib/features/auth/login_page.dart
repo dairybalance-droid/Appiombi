@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../config/app_config.dart';
 import '../../services/supabase_service.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_responsive.dart';
 import '../../widgets/app_logo_placeholder.dart';
 import '../../widgets/app_primary_button.dart';
 import '../../widgets/error_view.dart';
@@ -26,7 +27,8 @@ class AuthGatePage extends ConsumerWidget {
 
     return authUser.when(
       data: (user) => user == null ? const LoginPage() : const FarmListPage(),
-      loading: () => const LoadingView(message: 'Controllo sessione in corso...'),
+      loading: () =>
+          const LoadingView(message: 'Controllo sessione in corso...'),
       error: (error, _) => ErrorView(
         title: 'Impossibile leggere la sessione',
         message: error.toString(),
@@ -99,7 +101,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         context.go('/farms');
       } else {
         setState(() {
-          _errorText = 'Login non riuscito. Verifica credenziali e configurazione.';
+          _errorText =
+              'Login non riuscito. Verifica credenziali e configurazione.';
         });
       }
     } on AuthException catch (error) {
@@ -126,15 +129,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final viewInsetsBottom = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final isPhone = constraints.maxWidth < 520;
-            final horizontalPadding = isPhone ? 20.0 : 24.0;
-            final verticalPadding = isPhone ? 16.0 : 24.0;
+            final viewportWidth = constraints.maxWidth;
+            final isPhone = viewportWidth < AppResponsive.compactBreakpoint;
+            final horizontalPadding = viewportWidth <= 320
+                ? 12.0
+                : viewportWidth <= AppResponsive.smallPhoneWidth
+                ? 14.0
+                : AppResponsive.screenPadding;
+            const verticalPadding = 16.0;
+            final fieldTextStyle = theme.textTheme.bodyLarge?.copyWith(
+              fontSize: 16,
+            );
 
             return SingleChildScrollView(
+              primary: true,
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: EdgeInsets.fromLTRB(
                 horizontalPadding,
@@ -142,25 +154,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 horizontalPadding,
                 viewInsetsBottom + verticalPadding,
               ),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - (verticalPadding * 2),
-                ),
-                child: Center(
+              child: SizedBox(
+                width: double.infinity,
+                child: Align(
+                  alignment: Alignment.topCenter,
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 420),
+                    constraints: const BoxConstraints(
+                      maxWidth: AppResponsive.maxPhoneContentWidth,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         AppLogoPlaceholder(compact: isPhone),
-                        SizedBox(height: isPhone ? 24 : 32),
-                        Text(
-                          'Login',
-                          style: isPhone
-                              ? theme.textTheme.headlineSmall
-                              : theme.textTheme.headlineMedium,
-                        ),
+                        SizedBox(height: isPhone ? 20 : 24),
+                        Text('Login', style: theme.textTheme.headlineSmall),
                         const SizedBox(height: 8),
                         Text(
                           'App mobile nativa per la gestione delle sessioni podali in stalla.',
@@ -172,14 +179,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         if (!config.isSupabaseConfigured)
                           _LoginInfoBanner(
                             color: AppColors.warning,
-                            backgroundColor: AppColors.warning.withValues(alpha: 0.12),
+                            backgroundColor: AppColors.warning.withValues(
+                              alpha: 0.12,
+                            ),
                             message:
                                 'Configurazione Supabase ancora placeholder. Il pulsante Login apre lo scheletro navigabile per la UI MVP.',
                           ),
                         if (config.devBypassLogin)
                           _LoginInfoBanner(
                             color: AppColors.secondary,
-                            backgroundColor: AppColors.secondary.withValues(alpha: 0.12),
+                            backgroundColor: AppColors.secondary.withValues(
+                              alpha: 0.12,
+                            ),
                             message:
                                 'Dev bypass attivo. Questa schermata e\' bypassata automaticamente nello sviluppo locale.',
                           ),
@@ -189,9 +200,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             children: [
                               TextFormField(
                                 controller: _emailController,
+                                style: fieldTextStyle,
                                 keyboardType: TextInputType.emailAddress,
                                 textInputAction: TextInputAction.next,
                                 autofillHints: const [AutofillHints.username],
+                                scrollPadding: const EdgeInsets.only(
+                                  bottom: 120,
+                                ),
                                 decoration: const InputDecoration(
                                   isDense: true,
                                   labelText: 'Email',
@@ -210,10 +225,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               const SizedBox(height: 14),
                               TextFormField(
                                 controller: _passwordController,
+                                style: fieldTextStyle,
                                 obscureText: true,
                                 textInputAction: TextInputAction.done,
                                 autofillHints: const [AutofillHints.password],
-                                onFieldSubmitted: (_) => _isSubmitting ? null : _submit(),
+                                scrollPadding: const EdgeInsets.only(
+                                  bottom: 140,
+                                ),
+                                onFieldSubmitted: (_) =>
+                                    _isSubmitting ? null : _submit(),
                                 decoration: const InputDecoration(
                                   isDense: true,
                                   labelText: 'Password',
@@ -239,7 +259,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ],
                         SizedBox(height: isPhone ? 20 : 24),
                         AppPrimaryButton(
-                          label: _isSubmitting ? 'Accesso in corso...' : 'Login',
+                          label: _isSubmitting
+                              ? 'Accesso in corso...'
+                              : 'Login',
                           onPressed: _isSubmitting ? null : _submit,
                         ),
                         const SizedBox(height: 18),
