@@ -1375,7 +1375,9 @@ class _BottomCompactButton extends StatelessWidget {
     final compact = AppResponsive.isCompact(context);
     return SizedBox(
       width: label == null ? AppResponsive.minTouchTarget : (compact ? 86 : 92),
-      height: AppResponsive.minTouchTarget,
+      height: label == null
+          ? AppResponsive.minTouchTarget
+          : AppResponsive.primaryActionHeight,
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(

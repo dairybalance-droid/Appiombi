@@ -274,6 +274,11 @@ class _BadgeClipper extends CustomClipper<Path> {
 }
 
 Path _displayPathForZone(HoofMapZoneDefinition zone, Size size) {
+  final customPath = _customStyledZonePath(zone, size);
+  if (customPath != null) {
+    return customPath;
+  }
+
   switch (zone.shapeKind) {
     case HoofShapeKind.oval:
       final points = zone.visiblePoints
@@ -295,6 +300,248 @@ Path _displayPathForZone(HoofMapZoneDefinition zone, Size size) {
       }
       return _smoothedClosedPath(points);
   }
+}
+
+Path? _customStyledZonePath(HoofMapZoneDefinition zone, Size size) {
+  final zoneCode = zone.zoneCode;
+
+  if (zoneCode.startsWith('C')) {
+    final parts = zoneCode.split('_');
+    if (parts.length < 2) {
+      return null;
+    }
+    final clawNumber = int.tryParse(parts.first.substring(1));
+    if (clawNumber == null) {
+      return null;
+    }
+    final suffix = parts[1];
+    final isLeft = _isLeftVisualClaw(zone.footLabel, clawNumber);
+    final rect = _clawRect(size, isLeft: isLeft);
+
+    if (suffix == 'UG') {
+      return _accessoryDigitPath(size, isLeft: isLeft);
+    }
+
+    return _clawZonePath(suffix, rect, isLeft: isLeft);
+  }
+
+  if (zoneCode.startsWith('SKIN_')) {
+    if (zoneCode.endsWith('_LAT')) {
+      final clawNumber = int.tryParse(
+        zoneCode.replaceAll('SKIN_C', '').replaceAll('_LAT', ''),
+      );
+      if (clawNumber == null) {
+        return null;
+      }
+      final isLeft = _isLeftVisualClaw(zone.footLabel, clawNumber);
+      return _lateralSkinPath(size, isLeft: isLeft);
+    }
+
+    if (zoneCode.endsWith('_Nod')) {
+      return _centralSkinPath(size, _CentralSkinBand.top);
+    }
+    if (zoneCode.endsWith('_D')) {
+      return _centralSkinPath(size, _CentralSkinBand.upperMid);
+    }
+    if (zoneCode.endsWith('_ID')) {
+      return _centralSkinPath(size, _CentralSkinBand.mid);
+    }
+    if (zoneCode.endsWith('_Dors')) {
+      return _centralSkinPath(size, _CentralSkinBand.bottom);
+    }
+  }
+
+  return null;
+}
+
+bool _isLeftVisualClaw(String footLabel, int clawNumber) {
+  return switch (footLabel) {
+    'AS' => clawNumber == 1,
+    'AD' => clawNumber == 3,
+    'PS' => clawNumber == 5,
+    'PD' => clawNumber == 7,
+    _ => true,
+  };
+}
+
+Rect _clawRect(Size size, {required bool isLeft}) {
+  final width = size.width * 0.31;
+  final height = size.height * 0.70;
+  final left = isLeft ? size.width * 0.08 : size.width * 0.61;
+  final top = size.height * 0.22;
+  return Rect.fromLTWH(left, top, width, height);
+}
+
+Path _clawZonePath(String suffix, Rect rect, {required bool isLeft}) {
+  switch (suffix) {
+    case 'B':
+      return _zonePath(rect, const [
+        Offset(0.18, 0.16),
+        Offset(0.32, 0.05),
+        Offset(0.58, 0.04),
+        Offset(0.74, 0.13),
+        Offset(0.70, 0.31),
+        Offset(0.32, 0.31),
+      ], isLeft: isLeft);
+    case 'S':
+      return _zonePath(rect, const [
+        Offset(0.16, 0.28),
+        Offset(0.31, 0.22),
+        Offset(0.57, 0.23),
+        Offset(0.78, 0.35),
+        Offset(0.73, 0.49),
+        Offset(0.48, 0.57),
+        Offset(0.24, 0.51),
+        Offset(0.08, 0.40),
+      ], isLeft: isLeft);
+    case 'P':
+      return _zonePath(rect, const [
+        Offset(0.23, 0.51),
+        Offset(0.48, 0.57),
+        Offset(0.66, 0.69),
+        Offset(0.61, 0.84),
+        Offset(0.44, 0.93),
+        Offset(0.25, 0.86),
+        Offset(0.18, 0.66),
+      ], isLeft: isLeft);
+    case 'APX':
+      return _zonePath(rect, const [
+        Offset(0.34, 0.84),
+        Offset(0.53, 0.89),
+        Offset(0.48, 1.00),
+        Offset(0.30, 0.96),
+      ], isLeft: isLeft);
+    case 'LBab':
+      return _zonePath(rect, const [
+        Offset(0.00, 0.39),
+        Offset(0.06, 0.20),
+        Offset(0.18, 0.10),
+        Offset(0.18, 0.27),
+        Offset(0.08, 0.40),
+        Offset(0.18, 0.66),
+        Offset(0.25, 0.86),
+        Offset(0.18, 0.98),
+        Offset(0.04, 0.88),
+        Offset(0.00, 0.64),
+      ], isLeft: isLeft);
+    case 'LBax':
+      return _zonePath(rect, const [
+        Offset(0.76, 0.35),
+        Offset(0.88, 0.40),
+        Offset(0.90, 0.60),
+        Offset(0.79, 0.88),
+        Offset(0.65, 0.96),
+        Offset(0.61, 0.84),
+        Offset(0.66, 0.69),
+        Offset(0.73, 0.49),
+      ], isLeft: isLeft);
+  }
+  return Path();
+}
+
+Path _zonePath(Rect rect, List<Offset> localPoints, {required bool isLeft}) {
+  final points = localPoints
+      .map(
+        (point) => Offset(
+          rect.left + (isLeft ? point.dx : (1 - point.dx)) * rect.width,
+          rect.top + point.dy * rect.height,
+        ),
+      )
+      .toList();
+  return _smoothedClosedPath(points);
+}
+
+Path _accessoryDigitPath(Size size, {required bool isLeft}) {
+  final rect = Rect.fromLTWH(
+    isLeft ? size.width * 0.19 : size.width * 0.67,
+    size.height * 0.06,
+    size.width * 0.17,
+    size.height * 0.14,
+  );
+
+  final points = [
+    Offset(rect.left + rect.width * 0.52, rect.top),
+    Offset(rect.right, rect.bottom),
+    Offset(rect.left, rect.bottom - rect.height * 0.06),
+  ];
+  return _roundedPolygonPath(points, 9);
+}
+
+enum _CentralSkinBand { top, upperMid, mid, bottom }
+
+Path _centralSkinPath(Size size, _CentralSkinBand band) {
+  Rect rect;
+  switch (band) {
+    case _CentralSkinBand.top:
+      rect = Rect.fromLTWH(
+        size.width * 0.40,
+        size.height * 0.07,
+        size.width * 0.20,
+        size.height * 0.08,
+      );
+    case _CentralSkinBand.upperMid:
+      rect = Rect.fromLTWH(
+        size.width * 0.405,
+        size.height * 0.18,
+        size.width * 0.19,
+        size.height * 0.085,
+      );
+    case _CentralSkinBand.mid:
+      rect = Rect.fromLTWH(
+        size.width * 0.43,
+        size.height * 0.295,
+        size.width * 0.14,
+        size.height * 0.145,
+      );
+    case _CentralSkinBand.bottom:
+      rect = Rect.fromLTWH(
+        size.width * 0.415,
+        size.height * 0.47,
+        size.width * 0.17,
+        size.height * 0.16,
+      );
+  }
+
+  return Path()..addRRect(
+    RRect.fromRectAndRadius(
+      rect,
+      Radius.circular(math.min(rect.width, rect.height) * 0.48),
+    ),
+  );
+}
+
+Path _lateralSkinPath(Size size, {required bool isLeft}) {
+  final rect = Rect.fromLTWH(
+    isLeft ? size.width * 0.01 : size.width * 0.86,
+    size.height * 0.20,
+    size.width * 0.10,
+    size.height * 0.22,
+  );
+
+  final points = isLeft
+      ? [
+          Offset(rect.right, rect.top + rect.height * 0.12),
+          Offset(rect.left + rect.width * 0.38, rect.top),
+          Offset(rect.left, rect.top + rect.height * 0.28),
+          Offset(
+            rect.left + rect.width * 0.06,
+            rect.bottom - rect.height * 0.16,
+          ),
+          Offset(rect.right - rect.width * 0.16, rect.bottom),
+          Offset(rect.right, rect.bottom - rect.height * 0.22),
+        ]
+      : [
+          Offset(rect.left, rect.top + rect.height * 0.12),
+          Offset(rect.right - rect.width * 0.38, rect.top),
+          Offset(rect.right, rect.top + rect.height * 0.28),
+          Offset(
+            rect.right - rect.width * 0.06,
+            rect.bottom - rect.height * 0.16,
+          ),
+          Offset(rect.left + rect.width * 0.16, rect.bottom),
+          Offset(rect.left, rect.bottom - rect.height * 0.22),
+        ];
+  return _smoothedClosedPath(points);
 }
 
 Path _smoothedClosedPath(List<Offset> points) {
