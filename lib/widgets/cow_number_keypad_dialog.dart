@@ -195,31 +195,27 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final compact = AppResponsive.isCompact(context);
 
     return SafeArea(
       child: AlertDialog(
-        insetPadding: EdgeInsets.symmetric(
-          horizontal: compact ? 12 : 20,
-          vertical: compact ? 12 : 24,
-        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         titlePadding: const EdgeInsets.fromLTRB(
-          AppResponsive.compactHorizontalPadding,
-          AppResponsive.compactVerticalPadding,
-          AppResponsive.compactHorizontalPadding,
+          AppResponsive.screenPadding,
+          12,
+          AppResponsive.screenPadding,
           0,
         ),
         contentPadding: const EdgeInsets.fromLTRB(
-          AppResponsive.compactHorizontalPadding,
-          AppResponsive.compactVerticalPadding,
-          AppResponsive.compactHorizontalPadding,
+          AppResponsive.screenPadding,
+          12,
+          AppResponsive.screenPadding,
           AppResponsive.controlGap,
         ),
         actionsPadding: const EdgeInsets.fromLTRB(
-          AppResponsive.compactHorizontalPadding,
+          AppResponsive.screenPadding,
           0,
-          AppResponsive.compactHorizontalPadding,
-          AppResponsive.compactVerticalPadding,
+          AppResponsive.screenPadding,
+          12,
         ),
         title: Row(
           children: [
@@ -235,6 +231,10 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
               onPressed: _submitting ? null : widget.onMicTap,
               icon: const Icon(Icons.mic_none_rounded),
               tooltip: 'Microfono',
+              constraints: const BoxConstraints(
+                minWidth: AppResponsive.minTouchTarget,
+                minHeight: AppResponsive.minTouchTarget,
+              ),
               visualDensity: VisualDensity.compact,
             ),
           ],
@@ -267,7 +267,7 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
-                    fontSize: compact ? 24 : 28,
+                    fontSize: 24,
                     color: _displayValue.isEmpty
                         ? AppColors.textSecondary
                         : AppColors.textPrimary,
@@ -283,12 +283,12 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: AppColors.danger,
                       fontWeight: FontWeight.w700,
-                      fontSize: AppResponsive.secondaryTextSize,
+                      fontSize: AppResponsive.secondaryFontSize,
                     ),
                   ),
                 ),
               ],
-              const SizedBox(height: AppResponsive.compactVerticalPadding),
+              const SizedBox(height: 12),
               for (
                 var rowIndex = 0;
                 rowIndex < _keypadRows.length;
@@ -335,7 +335,7 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
           TextButton(
             onPressed: _submitting ? null : () => Navigator.of(context).pop(),
             style: TextButton.styleFrom(
-              minimumSize: const Size(96, AppResponsive.primaryActionHeight),
+              minimumSize: const Size(96, AppResponsive.normalButtonHeight),
               textStyle: AppResponsive.buttonTextStyle(context),
             ),
             child: const Text('Annulla'),
@@ -343,7 +343,10 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
           ElevatedButton(
             onPressed: _submitting ? null : _submit,
             style: ElevatedButton.styleFrom(
-              minimumSize: const Size(96, AppResponsive.primaryActionHeight),
+              minimumSize: const Size(
+                96,
+                AppResponsive.largePrimaryButtonHeight,
+              ),
               textStyle: AppResponsive.buttonTextStyle(context),
             ),
             child: Text(_submitting ? 'Attendere...' : 'OK'),

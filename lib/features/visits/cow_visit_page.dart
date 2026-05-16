@@ -773,135 +773,143 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
         return ListView(
           padding: AppResponsive.pagePadding(context).copyWith(bottom: 20),
           children: [
-            _buildVisitTopBar(),
-            SizedBox(height: isPhone ? 8 : 12),
-            Text(
-              sessionType,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            SizedBox(height: isPhone ? 10 : 16),
-            AppCard(
+            AppResponsive.phoneConstrained(
+              context,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  _buildVisitTopBar(),
+                  SizedBox(height: isPhone ? 8 : 12),
                   Text(
-                    'Compilazione visita',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    sessionType,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.w700,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   SizedBox(height: isPhone ? 10 : 16),
-                  TextFormField(
-                    controller: _groupController,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      labelText: 'Gruppo',
-                    ),
-                  ),
-                  SizedBox(height: fieldGap),
-                  _AppDropdownField<String>(
-                    label: 'Laminite',
-                    value: _laminitisCode,
-                    items: _laminitisOptions,
-                    onChanged: (value) {
-                      setState(() => _laminitisCode = value ?? '');
-                    },
-                    compact: isPhone,
-                  ),
-                  SizedBox(height: fieldGap),
-                  _AppDropdownField<int?>(
-                    label: 'Cavatappi',
-                    value: _corkscrewCode,
-                    items: _corkscrewOptions,
-                    onChanged: (value) {
-                      setState(() => _corkscrewCode = value);
-                    },
-                    compact: isPhone,
-                  ),
-                  SizedBox(height: fieldGap),
-                  Flex(
-                    direction: isPhone ? Axis.vertical : Axis.horizontal,
-                    children: [
-                      Expanded(
-                        flex: isPhone ? 0 : 1,
-                        child: _CounterField(
-                          label: 'Suole',
-                          value: _solesCount,
-                          compact: isPhone,
-                          onIncrement: () => setState(() => _solesCount += 1),
-                          onDecrement: () {
-                            setState(() {
-                              if (_solesCount > 0) {
-                                _solesCount -= 1;
-                              }
-                            });
-                          },
+                  AppCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Compilazione visita',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
-                      ),
-                      SizedBox(
-                        width: isPhone ? 0 : 12,
-                        height: isPhone ? 12 : 0,
-                      ),
-                      Expanded(
-                        flex: isPhone ? 0 : 1,
-                        child: _CounterField(
-                          label: 'Bende',
-                          value: _bandagesCount,
-                          compact: isPhone,
-                          onIncrement: () =>
-                              setState(() => _bandagesCount += 1),
-                          onDecrement: () {
-                            setState(() {
-                              if (_bandagesCount > 0) {
-                                _bandagesCount -= 1;
-                              }
-                            });
-                          },
+                        SizedBox(height: isPhone ? 10 : 16),
+                        TextFormField(
+                          controller: _groupController,
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            labelText: 'Gruppo',
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: fieldGap),
-                  _AppDropdownField<String>(
-                    label: 'Antibiotico',
-                    value: _antibioticCode,
-                    items: _antibioticOptions,
-                    onChanged: (value) {
-                      setState(() => _antibioticCode = value ?? '');
-                    },
-                    compact: isPhone,
-                  ),
-                  SizedBox(height: fieldGap),
-                  _AppDropdownField<String>(
-                    label: 'Antinfiammatorio',
-                    value: _antiInflammatoryCode,
-                    items: _antiInflammatoryOptions,
-                    onChanged: (value) {
-                      setState(() => _antiInflammatoryCode = value ?? '');
-                    },
-                    compact: isPhone,
-                  ),
-                  SizedBox(height: fieldGap),
-                  _AppDropdownField<String>(
-                    label: 'Ricontrollo',
-                    value: _recheckCode,
-                    items: _recheckOptions,
-                    onChanged: (value) {
-                      setState(() => _recheckCode = value ?? '');
-                    },
-                    compact: isPhone,
-                  ),
-                  SizedBox(height: fieldGap),
-                  TextFormField(
-                    controller: _notesController,
-                    minLines: isPhone ? 3 : 4,
-                    maxLines: isPhone ? 4 : 6,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      labelText: 'Note',
+                        SizedBox(height: fieldGap),
+                        _AppDropdownField<String>(
+                          label: 'Laminite',
+                          value: _laminitisCode,
+                          items: _laminitisOptions,
+                          onChanged: (value) {
+                            setState(() => _laminitisCode = value ?? '');
+                          },
+                          compact: isPhone,
+                        ),
+                        SizedBox(height: fieldGap),
+                        _AppDropdownField<int?>(
+                          label: 'Cavatappi',
+                          value: _corkscrewCode,
+                          items: _corkscrewOptions,
+                          onChanged: (value) {
+                            setState(() => _corkscrewCode = value);
+                          },
+                          compact: isPhone,
+                        ),
+                        SizedBox(height: fieldGap),
+                        Flex(
+                          direction: isPhone ? Axis.vertical : Axis.horizontal,
+                          children: [
+                            Expanded(
+                              flex: isPhone ? 0 : 1,
+                              child: _CounterField(
+                                label: 'Suole',
+                                value: _solesCount,
+                                compact: isPhone,
+                                onIncrement: () =>
+                                    setState(() => _solesCount += 1),
+                                onDecrement: () {
+                                  setState(() {
+                                    if (_solesCount > 0) {
+                                      _solesCount -= 1;
+                                    }
+                                  });
+                                },
+                              ),
+                            ),
+                            SizedBox(
+                              width: isPhone ? 0 : 12,
+                              height: isPhone ? 12 : 0,
+                            ),
+                            Expanded(
+                              flex: isPhone ? 0 : 1,
+                              child: _CounterField(
+                                label: 'Bende',
+                                value: _bandagesCount,
+                                compact: isPhone,
+                                onIncrement: () =>
+                                    setState(() => _bandagesCount += 1),
+                                onDecrement: () {
+                                  setState(() {
+                                    if (_bandagesCount > 0) {
+                                      _bandagesCount -= 1;
+                                    }
+                                  });
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: fieldGap),
+                        _AppDropdownField<String>(
+                          label: 'Antibiotico',
+                          value: _antibioticCode,
+                          items: _antibioticOptions,
+                          onChanged: (value) {
+                            setState(() => _antibioticCode = value ?? '');
+                          },
+                          compact: isPhone,
+                        ),
+                        SizedBox(height: fieldGap),
+                        _AppDropdownField<String>(
+                          label: 'Antinfiammatorio',
+                          value: _antiInflammatoryCode,
+                          items: _antiInflammatoryOptions,
+                          onChanged: (value) {
+                            setState(() => _antiInflammatoryCode = value ?? '');
+                          },
+                          compact: isPhone,
+                        ),
+                        SizedBox(height: fieldGap),
+                        _AppDropdownField<String>(
+                          label: 'Ricontrollo',
+                          value: _recheckCode,
+                          items: _recheckOptions,
+                          onChanged: (value) {
+                            setState(() => _recheckCode = value ?? '');
+                          },
+                          compact: isPhone,
+                        ),
+                        SizedBox(height: fieldGap),
+                        TextFormField(
+                          controller: _notesController,
+                          minLines: isPhone ? 3 : 4,
+                          maxLines: isPhone ? 4 : 6,
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            labelText: 'Note',
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -917,77 +925,88 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isPhone = AppResponsive.isCompact(context);
-        final mapWidth = constraints.maxWidth > 860
-            ? 360.0
-            : (constraints.maxWidth - (isPhone ? 8 : 24)).clamp(260.0, 420.0);
+        final maxContentWidth = AppResponsive.contentMaxWidth(context);
+        final availableWidth = constraints.maxWidth > maxContentWidth
+            ? maxContentWidth
+            : constraints.maxWidth;
+        final mapWidth = (availableWidth - AppResponsive.controlGap).clamp(
+          260.0,
+          390.0,
+        );
         return SingleChildScrollView(
-          padding: AppResponsive.pagePadding(
-            context,
-          ).copyWith(left: isPhone ? 10 : 16, right: isPhone ? 10 : 16),
+          padding: AppResponsive.pagePadding(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildVisitTopBar(),
-              SizedBox(height: isPhone ? 8 : 12),
-              Text(
-                widget.sessionType?.trim().isNotEmpty == true
-                    ? widget.sessionType!
-                    : 'Sessione operativa',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              SizedBox(height: isPhone ? 8 : 10),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: SizedBox(
-                  width: mapWidth,
-                  child: HoofPairMap(
-                    footLabel: 'AS',
-                    compact: isPhone,
-                    observations: _hoofMapObservations,
-                    onZoneTap: _showZoneDialog,
-                  ),
-                ),
-              ),
-              SizedBox(height: isPhone ? 6 : 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: SizedBox(
-                  width: mapWidth,
-                  child: HoofPairMap(
-                    footLabel: 'AD',
-                    compact: isPhone,
-                    observations: _hoofMapObservations,
-                    onZoneTap: _showZoneDialog,
-                  ),
-                ),
-              ),
-              SizedBox(height: isPhone ? 6 : 8),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: SizedBox(
-                  width: mapWidth,
-                  child: HoofPairMap(
-                    footLabel: 'PS',
-                    compact: isPhone,
-                    observations: _hoofMapObservations,
-                    onZoneTap: _showZoneDialog,
-                  ),
-                ),
-              ),
-              SizedBox(height: isPhone ? 6 : 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: SizedBox(
-                  width: mapWidth,
-                  child: HoofPairMap(
-                    footLabel: 'PD',
-                    compact: isPhone,
-                    observations: _hoofMapObservations,
-                    onZoneTap: _showZoneDialog,
-                  ),
+              AppResponsive.phoneConstrained(
+                context,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildVisitTopBar(),
+                    SizedBox(height: isPhone ? 8 : 12),
+                    Text(
+                      widget.sessionType?.trim().isNotEmpty == true
+                          ? widget.sessionType!
+                          : 'Sessione operativa',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    SizedBox(height: isPhone ? 8 : 10),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: mapWidth,
+                        child: HoofPairMap(
+                          footLabel: 'AS',
+                          compact: isPhone,
+                          observations: _hoofMapObservations,
+                          onZoneTap: _showZoneDialog,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: isPhone ? 6 : 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: SizedBox(
+                        width: mapWidth,
+                        child: HoofPairMap(
+                          footLabel: 'AD',
+                          compact: isPhone,
+                          observations: _hoofMapObservations,
+                          onZoneTap: _showZoneDialog,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: isPhone ? 6 : 8),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: mapWidth,
+                        child: HoofPairMap(
+                          footLabel: 'PS',
+                          compact: isPhone,
+                          observations: _hoofMapObservations,
+                          onZoneTap: _showZoneDialog,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: isPhone ? 6 : 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: SizedBox(
+                        width: mapWidth,
+                        child: HoofPairMap(
+                          footLabel: 'PD',
+                          compact: isPhone,
+                          observations: _hoofMapObservations,
+                          onZoneTap: _showZoneDialog,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -1004,32 +1023,39 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
         return ListView(
           padding: AppResponsive.pagePadding(context).copyWith(bottom: 20),
           children: [
-            _buildVisitTopBar(),
-            SizedBox(height: isPhone ? 8 : 12),
-            Text(
-              widget.sessionType?.trim().isNotEmpty == true
-                  ? widget.sessionType!
-                  : 'Sessione operativa',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            SizedBox(height: isPhone ? 10 : 16),
-            AppCard(
+            AppResponsive.phoneConstrained(
+              context,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  _buildVisitTopBar(),
+                  SizedBox(height: isPhone ? 8 : 12),
                   Text(
-                    'Altre info',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    widget.sessionType?.trim().isNotEmpty == true
+                        ? widget.sessionType!
+                        : 'Sessione operativa',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.w700,
+                      color: AppColors.textSecondary,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Sezione pronta per integrare i campi operativi complementari della visita.',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                  SizedBox(height: isPhone ? 10 : 16),
+                  AppCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Altre info',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Sezione pronta per integrare i campi operativi complementari della visita.',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -1078,7 +1104,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
           if (data == null) {
             return const ErrorView(
               title: 'Visita non trovata',
-              message: 'La visita richiesta non è disponibile.',
+              message: 'La visita richiesta non Ã¨ disponibile.',
             );
           }
 
