@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -83,17 +83,19 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     }
 
     final service = ref.read(supabaseServiceProvider);
-    final results = await Future.wait([
-      service.fetchCowVisit(widget.cowVisitId!),
-      service.fetchSessionVisits(widget.sessionId!),
-      service.fetchCowVisitTextFlag(
-        cowVisitId: widget.cowVisitId!,
-        flagKey: 'hoof_map_v1_json',
-      ),
-    ]).timeout(
-      const Duration(seconds: 10),
-      onTimeout: () => throw TimeoutException('Timeout caricamento visita vacca'),
-    );
+    final results =
+        await Future.wait([
+          service.fetchCowVisit(widget.cowVisitId!),
+          service.fetchSessionVisits(widget.sessionId!),
+          service.fetchCowVisitTextFlag(
+            cowVisitId: widget.cowVisitId!,
+            flagKey: 'hoof_map_v1_json',
+          ),
+        ]).timeout(
+          const Duration(seconds: 10),
+          onTimeout: () =>
+              throw TimeoutException('Timeout caricamento visita vacca'),
+        );
 
     final visit = results[0] as CowVisitDetail;
     final sessionVisits = results[1] as List<SessionVisitRow>;
@@ -112,10 +114,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     _recheckCode = visit.recheckCode;
     _hoofMapObservations = decodeHoofMapObservations(hoofMapFlag);
 
-    return _CowVisitPageData(
-      visit: visit,
-      sessionVisits: sessionVisits,
-    );
+    return _CowVisitPageData(visit: visit, sessionVisits: sessionVisits);
   }
 
   Future<void> _selectVisitDate() async {
@@ -223,9 +222,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     }
 
     if (widget.cowVisitId == null || widget.sessionId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Visita non disponibile.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Visita non disponibile.')));
       return false;
     }
 
@@ -238,7 +237,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
     });
 
     try {
-      await ref.read(supabaseServiceProvider).saveCowVisitGeneralData(
+      await ref
+          .read(supabaseServiceProvider)
+          .saveCowVisitGeneralData(
             cowVisitId: widget.cowVisitId!,
             sessionId: widget.sessionId!,
             visitDate: visitDate,
@@ -284,7 +285,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
 
     setState(() => _savingMap = true);
     try {
-      await ref.read(supabaseServiceProvider).saveCowVisitTextFlag(
+      await ref
+          .read(supabaseServiceProvider)
+          .saveCowVisitTextFlag(
             cowVisitId: widget.cowVisitId!,
             flagKey: 'hoof_map_v1_json',
             value: encodeHoofMapObservations(_hoofMapObservations),
@@ -330,8 +333,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
       return;
     }
 
-    final currentIndex =
-        data.sessionVisits.indexWhere((visit) => visit.id == widget.cowVisitId);
+    final currentIndex = data.sessionVisits.indexWhere(
+      (visit) => visit.id == widget.cowVisitId,
+    );
     if (currentIndex <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Nessun capo precedente nella sessione.')),
@@ -382,9 +386,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
 
     setState(() => _saving = true);
     try {
-      await ref.read(supabaseServiceProvider).softDeleteCowVisit(
-            cowVisitId: widget.cowVisitId!,
-          );
+      await ref
+          .read(supabaseServiceProvider)
+          .softDeleteCowVisit(cowVisitId: widget.cowVisitId!);
       if (!mounted) {
         return;
       }
@@ -431,7 +435,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
       onMicTap: _showVoiceInfo,
       onConfirm: (cowNumber) async {
         try {
-          final visit = await ref.read(supabaseServiceProvider).createDraftVisit(
+          final visit = await ref
+              .read(supabaseServiceProvider)
+              .createDraftVisit(
                 farmId: widget.farmId,
                 sessionId: widget.sessionId!,
                 cowNumber: cowNumber,
@@ -543,10 +549,18 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
         actions: [
           TextButton(
             onPressed: saving ? null : remove,
+            style: TextButton.styleFrom(
+              minimumSize: const Size(96, AppResponsive.minTouchTarget),
+              textStyle: AppResponsive.buttonTextStyle(popupContext),
+            ),
             child: const Text('Rimuovi'),
           ),
           ElevatedButton(
             onPressed: saving ? null : save,
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(112, AppResponsive.primaryActionHeight),
+              textStyle: AppResponsive.buttonTextStyle(popupContext),
+            ),
             child: Text(saving ? 'Attendere...' : 'Conferma'),
           ),
         ],
@@ -555,11 +569,11 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
           children: [
             Text(
               'Tipologia',
-              style: Theme.of(popupContext).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+              style: Theme.of(
+                popupContext,
+              ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppResponsive.controlGap),
             _OptionWrap(
               options: lesionOptions,
               selectedValue: lesionTypeCode,
@@ -569,14 +583,14 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                       setDialogState(() => lesionTypeCode = value);
                     },
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: AppResponsive.compactVerticalPadding),
             Text(
               'Estensione',
-              style: Theme.of(popupContext).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+              style: Theme.of(
+                popupContext,
+              ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppResponsive.controlGap),
             _OptionWrap(
               options: _extensionOptionItems,
               selectedValue: extensionCode,
@@ -616,7 +630,10 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
       context: context,
       builder: (dialogContext) {
         return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 24,
+          ),
           child: StatefulBuilder(
             builder: (popupContext, setDialogState) {
               return ConstrainedBox(
@@ -690,8 +707,8 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
         final isPhone = AppResponsive.isCompact(context);
         return Container(
           padding: EdgeInsets.symmetric(
-            horizontal: isPhone ? 8 : 12,
-            vertical: isPhone ? 8 : 10,
+            horizontal: isPhone ? AppResponsive.controlGap : 12,
+            vertical: isPhone ? 6 : 10,
           ),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -705,7 +722,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                 compact: isPhone,
                 onTap: _saving ? null : _navigateCycleBackward,
               ),
-              SizedBox(width: isPhone ? 4 : 8),
+              SizedBox(width: isPhone ? 6 : 8),
               Expanded(
                 flex: 3,
                 child: _TopBarValueChip(
@@ -715,13 +732,13 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                   onTap: _saving ? null : _editVisitDateFromTopBar,
                 ),
               ),
-              SizedBox(width: isPhone ? 4 : 8),
+              SizedBox(width: isPhone ? 6 : 8),
               _TopBarIconButton(
                 icon: Icons.mic_none_rounded,
                 compact: isPhone,
                 onTap: _showVoiceInfo,
               ),
-              SizedBox(width: isPhone ? 4 : 8),
+              SizedBox(width: isPhone ? 6 : 8),
               Expanded(
                 flex: 4,
                 child: _TopBarValueChip(
@@ -735,7 +752,7 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                   onTap: _saving ? null : _editCowNumberFromTopBar,
                 ),
               ),
-              SizedBox(width: isPhone ? 4 : 8),
+              SizedBox(width: isPhone ? 6 : 8),
               _TopBarIconButton(
                 icon: Icons.chevron_right_rounded,
                 compact: isPhone,
@@ -754,141 +771,143 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
         final isPhone = AppResponsive.isCompact(context);
         final fieldGap = AppResponsive.compactGap(context);
         return ListView(
-          padding: AppResponsive.pagePadding(context).copyWith(
-            bottom: 20,
-          ),
-        children: [
-        _buildVisitTopBar(),
-        SizedBox(height: isPhone ? 8 : 12),
-        Text(
-          sessionType,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          padding: AppResponsive.pagePadding(context).copyWith(bottom: 20),
+          children: [
+            _buildVisitTopBar(),
+            SizedBox(height: isPhone ? 8 : 12),
+            Text(
+              sessionType,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.textSecondary,
               ),
-        ),
-        SizedBox(height: isPhone ? 10 : 16),
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Compilazione visita',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            ),
+            SizedBox(height: isPhone ? 10 : 16),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Compilazione visita',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
-              ),
-              SizedBox(height: isPhone ? 10 : 16),
-              TextFormField(
-                controller: _groupController,
-                decoration: const InputDecoration(
-                  isDense: true,
-                  labelText: 'Gruppo',
-                ),
-              ),
-              SizedBox(height: fieldGap),
-              _AppDropdownField<String>(
-                label: 'Laminite',
-                value: _laminitisCode,
-                items: _laminitisOptions,
+                  ),
+                  SizedBox(height: isPhone ? 10 : 16),
+                  TextFormField(
+                    controller: _groupController,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      labelText: 'Gruppo',
+                    ),
+                  ),
+                  SizedBox(height: fieldGap),
+                  _AppDropdownField<String>(
+                    label: 'Laminite',
+                    value: _laminitisCode,
+                    items: _laminitisOptions,
                     onChanged: (value) {
                       setState(() => _laminitisCode = value ?? '');
                     },
                     compact: isPhone,
                   ),
-              SizedBox(height: fieldGap),
-              _AppDropdownField<int?>(
-                label: 'Cavatappi',
-                value: _corkscrewCode,
-                items: _corkscrewOptions,
-                onChanged: (value) {
-                  setState(() => _corkscrewCode = value);
-                },
-                compact: isPhone,
-              ),
-              SizedBox(height: fieldGap),
-                Flex(
-                  direction: isPhone ? Axis.vertical : Axis.horizontal,
-                  children: [
-                    Expanded(
-                      flex: isPhone ? 0 : 1,
-                      child: _CounterField(
-                        label: 'Suole',
-                        value: _solesCount,
-                        compact: isPhone,
-                        onIncrement: () => setState(() => _solesCount += 1),
-                        onDecrement: () {
-                          setState(() {
-                            if (_solesCount > 0) {
-                              _solesCount -= 1;
-                            }
-                          });
-                        },
+                  SizedBox(height: fieldGap),
+                  _AppDropdownField<int?>(
+                    label: 'Cavatappi',
+                    value: _corkscrewCode,
+                    items: _corkscrewOptions,
+                    onChanged: (value) {
+                      setState(() => _corkscrewCode = value);
+                    },
+                    compact: isPhone,
+                  ),
+                  SizedBox(height: fieldGap),
+                  Flex(
+                    direction: isPhone ? Axis.vertical : Axis.horizontal,
+                    children: [
+                      Expanded(
+                        flex: isPhone ? 0 : 1,
+                        child: _CounterField(
+                          label: 'Suole',
+                          value: _solesCount,
+                          compact: isPhone,
+                          onIncrement: () => setState(() => _solesCount += 1),
+                          onDecrement: () {
+                            setState(() {
+                              if (_solesCount > 0) {
+                                _solesCount -= 1;
+                              }
+                            });
+                          },
+                        ),
                       ),
-                    ),
-                    SizedBox(width: isPhone ? 0 : 12, height: isPhone ? 12 : 0),
-                    Expanded(
-                      flex: isPhone ? 0 : 1,
-                      child: _CounterField(
-                        label: 'Bende',
-                        value: _bandagesCount,
-                        compact: isPhone,
-                        onIncrement: () => setState(() => _bandagesCount += 1),
-                        onDecrement: () {
-                          setState(() {
-                            if (_bandagesCount > 0) {
-                              _bandagesCount -= 1;
-                            }
-                          });
-                        },
+                      SizedBox(
+                        width: isPhone ? 0 : 12,
+                        height: isPhone ? 12 : 0,
                       ),
+                      Expanded(
+                        flex: isPhone ? 0 : 1,
+                        child: _CounterField(
+                          label: 'Bende',
+                          value: _bandagesCount,
+                          compact: isPhone,
+                          onIncrement: () =>
+                              setState(() => _bandagesCount += 1),
+                          onDecrement: () {
+                            setState(() {
+                              if (_bandagesCount > 0) {
+                                _bandagesCount -= 1;
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: fieldGap),
+                  _AppDropdownField<String>(
+                    label: 'Antibiotico',
+                    value: _antibioticCode,
+                    items: _antibioticOptions,
+                    onChanged: (value) {
+                      setState(() => _antibioticCode = value ?? '');
+                    },
+                    compact: isPhone,
+                  ),
+                  SizedBox(height: fieldGap),
+                  _AppDropdownField<String>(
+                    label: 'Antinfiammatorio',
+                    value: _antiInflammatoryCode,
+                    items: _antiInflammatoryOptions,
+                    onChanged: (value) {
+                      setState(() => _antiInflammatoryCode = value ?? '');
+                    },
+                    compact: isPhone,
+                  ),
+                  SizedBox(height: fieldGap),
+                  _AppDropdownField<String>(
+                    label: 'Ricontrollo',
+                    value: _recheckCode,
+                    items: _recheckOptions,
+                    onChanged: (value) {
+                      setState(() => _recheckCode = value ?? '');
+                    },
+                    compact: isPhone,
+                  ),
+                  SizedBox(height: fieldGap),
+                  TextFormField(
+                    controller: _notesController,
+                    minLines: isPhone ? 3 : 4,
+                    maxLines: isPhone ? 4 : 6,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      labelText: 'Note',
                     ),
-                  ],
-                ),
-              SizedBox(height: fieldGap),
-              _AppDropdownField<String>(
-                label: 'Antibiotico',
-                value: _antibioticCode,
-                items: _antibioticOptions,
-                onChanged: (value) {
-                  setState(() => _antibioticCode = value ?? '');
-                },
-                compact: isPhone,
+                  ),
+                ],
               ),
-              SizedBox(height: fieldGap),
-              _AppDropdownField<String>(
-                label: 'Antinfiammatorio',
-                value: _antiInflammatoryCode,
-                items: _antiInflammatoryOptions,
-                onChanged: (value) {
-                  setState(() => _antiInflammatoryCode = value ?? '');
-                },
-                compact: isPhone,
-              ),
-              SizedBox(height: fieldGap),
-              _AppDropdownField<String>(
-                label: 'Ricontrollo',
-                value: _recheckCode,
-                items: _recheckOptions,
-                onChanged: (value) {
-                  setState(() => _recheckCode = value ?? '');
-                },
-                compact: isPhone,
-              ),
-              SizedBox(height: fieldGap),
-              TextFormField(
-                controller: _notesController,
-                minLines: isPhone ? 3 : 4,
-                maxLines: isPhone ? 4 : 6,
-                decoration: const InputDecoration(
-                  isDense: true,
-                  labelText: 'Note',
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
         );
       },
     );
@@ -902,11 +921,10 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
             ? 360.0
             : (constraints.maxWidth - (isPhone ? 8 : 24)).clamp(260.0, 420.0);
         return SingleChildScrollView(
-            padding: AppResponsive.pagePadding(context).copyWith(
-              left: isPhone ? 10 : 16,
-              right: isPhone ? 10 : 16,
-            ),
-            child: Column(
+          padding: AppResponsive.pagePadding(
+            context,
+          ).copyWith(left: isPhone ? 10 : 16, right: isPhone ? 10 : 16),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildVisitTopBar(),
@@ -916,9 +934,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
                     ? widget.sessionType!
                     : 'Sessione operativa',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textSecondary,
-                    ),
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textSecondary,
+                ),
               ),
               SizedBox(height: isPhone ? 8 : 10),
               Align(
@@ -984,39 +1002,39 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
       builder: (context, constraints) {
         final isPhone = AppResponsive.isCompact(context);
         return ListView(
-      padding: AppResponsive.pagePadding(context).copyWith(bottom: 20),
-      children: [
-        _buildVisitTopBar(),
-        SizedBox(height: isPhone ? 8 : 12),
-        Text(
-          widget.sessionType?.trim().isNotEmpty == true
-              ? widget.sessionType!
-              : 'Sessione operativa',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          padding: AppResponsive.pagePadding(context).copyWith(bottom: 20),
+          children: [
+            _buildVisitTopBar(),
+            SizedBox(height: isPhone ? 8 : 12),
+            Text(
+              widget.sessionType?.trim().isNotEmpty == true
+                  ? widget.sessionType!
+                  : 'Sessione operativa',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.textSecondary,
               ),
-        ),
-        SizedBox(height: isPhone ? 10 : 16),
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Altre info',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            ),
+            SizedBox(height: isPhone ? 10 : 16),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Altre info',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Sezione pronta per integrare i campi operativi complementari della visita.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              Text(
-                'Sezione pronta per integrare i campi operativi complementari della visita.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
         );
       },
     );
@@ -1046,7 +1064,8 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
           }
 
           if (snapshot.hasError) {
-            final message = snapshot.error.toString()
+            final message = snapshot.error
+                .toString()
                 .replaceFirst('Exception: ', '')
                 .replaceFirst('TimeoutException: ', '');
             return ErrorView(
@@ -1068,7 +1087,9 @@ class _CowVisitPageState extends ConsumerState<CowVisitPage> {
             child: Form(
               key: _formKey,
               child: switch (_currentSection) {
-                _VisitSection.generalData => _buildGeneralDataSection(sessionType),
+                _VisitSection.generalData => _buildGeneralDataSection(
+                  sessionType,
+                ),
                 _VisitSection.hoofMap => _buildHoofMapSection(),
                 _VisitSection.otherInfo => _buildOtherInfoSection(),
               },
@@ -1090,10 +1111,7 @@ enum _VisitSection {
 }
 
 class _CowVisitPageData {
-  const _CowVisitPageData({
-    required this.visit,
-    required this.sessionVisits,
-  });
+  const _CowVisitPageData({required this.visit, required this.sessionVisits});
 
   final CowVisitDetail visit;
   final List<SessionVisitRow> sessionVisits;
@@ -1132,9 +1150,9 @@ class _CounterField extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.textSecondary,
-              ),
+            fontWeight: FontWeight.w700,
+            color: AppColors.textSecondary,
+          ),
         ),
         const SizedBox(height: 6),
         Container(
@@ -1156,9 +1174,9 @@ class _CounterField extends StatelessWidget {
                   value.toString(),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        fontSize: compact ? 16 : null,
-                      ),
+                    fontWeight: FontWeight.w800,
+                    fontSize: compact ? 16 : null,
+                  ),
                 ),
               ),
               IconButton(
@@ -1197,10 +1215,7 @@ class _AppDropdownField<T> extends StatelessWidget {
       items: items,
       onChanged: onChanged,
       isDense: compact,
-      decoration: InputDecoration(
-        labelText: label,
-        isDense: compact,
-      ),
+      decoration: InputDecoration(labelText: label, isDense: compact),
     );
   }
 }
@@ -1227,16 +1242,14 @@ class _VisitBottomBar extends StatelessWidget {
       top: false,
       child: Container(
         padding: EdgeInsets.fromLTRB(
-          compact ? 10 : 16,
-          8,
-          compact ? 10 : 16,
-          compact ? 10 : 14,
+          compact ? AppResponsive.compactHorizontalPadding : 16,
+          AppResponsive.controlGap,
+          compact ? AppResponsive.compactHorizontalPadding : 16,
+          compact ? AppResponsive.compactVerticalPadding : 14,
         ),
         decoration: const BoxDecoration(
           color: Colors.white,
-          border: Border(
-            top: BorderSide(color: AppColors.border),
-          ),
+          border: Border(top: BorderSide(color: AppColors.border)),
         ),
         child: Row(
           children: [
@@ -1245,25 +1258,29 @@ class _VisitBottomBar extends StatelessWidget {
               icon: Icons.arrow_back_rounded,
               onTap: busy ? null : onPreviousCow,
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: AppResponsive.controlGap),
             _BottomCompactButton(
               icon: Icons.table_rows_rounded,
               onTap: busy ? null : onList,
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: AppResponsive.controlGap),
             _BottomCompactButton(
               icon: Icons.delete_outline_rounded,
               danger: true,
               onTap: busy ? null : onDelete,
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: AppResponsive.controlGap),
             Expanded(
               child: SizedBox(
-                height: AppResponsive.minTouchTarget,
+                height: AppResponsive.primaryActionHeight,
                 child: ElevatedButton(
                   onPressed: busy ? null : onNextCow,
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    textStyle: AppResponsive.buttonTextStyle(context),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -1300,14 +1317,14 @@ class _TopBarIconButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       onTap: onTap,
       child: Container(
-        width: compact ? 28 : 36,
-        height: compact ? 28 : 36,
+        width: AppResponsive.smallIconButtonSize(context),
+        height: AppResponsive.smallIconButtonSize(context),
         decoration: BoxDecoration(
           color: onTap == null ? const Color(0xFFF2F4F5) : Colors.white,
           border: Border.all(color: AppColors.border),
           borderRadius: BorderRadius.circular(7),
         ),
-        child: Icon(icon, size: compact ? 17 : 18),
+        child: Icon(icon, size: compact ? 18 : 20),
       ),
     );
   }
@@ -1331,12 +1348,16 @@ class _BottomCompactButton extends StatelessWidget {
     final foreground = danger ? AppColors.danger : AppColors.textPrimary;
     final compact = AppResponsive.isCompact(context);
     return SizedBox(
-      width: label == null ? (compact ? 48 : 52) : (compact ? 68 : 72),
+      width: label == null ? AppResponsive.minTouchTarget : (compact ? 86 : 92),
       height: AppResponsive.minTouchTarget,
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          minimumSize: const Size(
+            AppResponsive.minTouchTarget,
+            AppResponsive.minTouchTarget,
+          ),
           side: BorderSide(
             color: danger ? const Color(0xFFE2B3B8) : AppColors.border,
           ),
@@ -1356,8 +1377,10 @@ class _BottomCompactButton extends StatelessWidget {
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     style: TextStyle(
-                      fontSize: compact ? 9.5 : 10,
-                      height: 1.05,
+                      fontSize: compact
+                          ? AppResponsive.secondaryTextSize
+                          : AppResponsive.buttonFontSize,
+                      height: 1.1,
                       fontWeight: FontWeight.w700,
                       color: foreground,
                     ),
@@ -1409,21 +1432,25 @@ class _TopBarValueChip extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  size: compact ? 14 : 16,
+                  size: compact ? 16 : 18,
                   color: AppColors.textSecondary,
                 ),
-                SizedBox(width: compact ? 6 : 8),
+                SizedBox(width: compact ? AppResponsive.controlGap : 8),
                 Expanded(
                   child: Text(
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: emphasized ? FontWeight.w800 : FontWeight.w700,
-                          fontSize: compact
-                              ? (emphasized ? 15 : 12)
-                              : (emphasized ? 16 : 14),
-                        ),
+                      fontWeight: emphasized
+                          ? FontWeight.w800
+                          : FontWeight.w700,
+                      fontSize: compact
+                          ? (emphasized
+                                ? AppResponsive.buttonFontSize
+                                : AppResponsive.secondaryTextSize)
+                          : (emphasized ? 16 : 14),
+                    ),
                   ),
                 ),
               ],
@@ -1435,9 +1462,9 @@ class _TopBarValueChip extends StatelessWidget {
           Text(
             errorText!,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.danger,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: AppColors.danger,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ],
@@ -1460,25 +1487,34 @@ class _OptionWrap extends StatelessWidget {
   Widget build(BuildContext context) {
     final compact = AppResponsive.isCompact(context);
     return Wrap(
-      spacing: compact ? 6 : 8,
-      runSpacing: compact ? 6 : 8,
+      spacing: compact ? AppResponsive.controlGap : 10,
+      runSpacing: compact ? AppResponsive.controlGap : 10,
       children: [
         for (final option in options)
-          ChoiceChip(
-            label: Text(option.label.isEmpty ? 'Vuoto' : option.label),
-            selected: option.value == selectedValue,
-            onSelected: onSelected == null ? null : (_) => onSelected!(option.value),
-            selectedColor: const Color(0xFFEFE6D9),
-            side: BorderSide(
-              color: option.value == selectedValue
-                  ? AppColors.primary
-                  : AppColors.border,
+          ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: AppResponsive.minTouchTarget,
             ),
-            labelStyle: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: option.value == selectedValue
-                  ? AppColors.primary
-                  : AppColors.textPrimary,
+            child: ChoiceChip(
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              label: Text(option.label.isEmpty ? 'Vuoto' : option.label),
+              selected: option.value == selectedValue,
+              onSelected: onSelected == null
+                  ? null
+                  : (_) => onSelected!(option.value),
+              selectedColor: const Color(0xFFEFE6D9),
+              side: BorderSide(
+                color: option.value == selectedValue
+                    ? AppColors.primary
+                    : AppColors.border,
+              ),
+              labelStyle: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: AppResponsive.secondaryTextSize,
+                color: option.value == selectedValue
+                    ? AppColors.primary
+                    : AppColors.textPrimary,
+              ),
             ),
           ),
       ],
@@ -1526,24 +1562,27 @@ class _ResponsiveZonePopup extends StatelessWidget {
             children: [
               Padding(
                 padding: EdgeInsets.fromLTRB(
-                  compact ? 16 : 20,
-                  compact ? 12 : 16,
-                  compact ? 16 : 20,
-                  8,
+                  compact ? AppResponsive.compactHorizontalPadding : 20,
+                  compact ? AppResponsive.compactVerticalPadding : 16,
+                  compact ? AppResponsive.compactHorizontalPadding : 20,
+                  AppResponsive.controlGap,
                 ),
                 child: Row(
                   children: [
                     Expanded(
                       child: Text(
                         title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                     ),
                     IconButton(
                       onPressed: onClose,
                       icon: const Icon(Icons.close_rounded),
+                      constraints: const BoxConstraints(
+                        minWidth: AppResponsive.minTouchTarget,
+                        minHeight: AppResponsive.minTouchTarget,
+                      ),
                       visualDensity: VisualDensity.compact,
                     ),
                   ],
@@ -1552,10 +1591,10 @@ class _ResponsiveZonePopup extends StatelessWidget {
               Flexible(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.fromLTRB(
-                    compact ? 16 : 20,
+                    compact ? AppResponsive.compactHorizontalPadding : 20,
                     0,
-                    compact ? 16 : 20,
-                    12,
+                    compact ? AppResponsive.compactHorizontalPadding : 20,
+                    AppResponsive.compactVerticalPadding,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1563,15 +1602,17 @@ class _ResponsiveZonePopup extends StatelessWidget {
                       Text(
                         zoneCode,
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         anatomicalLabel,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(
+                        height: AppResponsive.compactVerticalPadding,
+                      ),
                       child,
                     ],
                   ),
@@ -1580,21 +1621,19 @@ class _ResponsiveZonePopup extends StatelessWidget {
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.fromLTRB(
-                  compact ? 12 : 16,
-                  10,
-                  compact ? 12 : 16,
-                  compact ? 10 : 14,
+                  compact ? AppResponsive.compactHorizontalPadding : 16,
+                  AppResponsive.controlGap,
+                  compact ? AppResponsive.compactHorizontalPadding : 16,
+                  compact ? AppResponsive.compactVerticalPadding : 14,
                 ),
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  border: Border(
-                    top: BorderSide(color: AppColors.border),
-                  ),
+                  border: Border(top: BorderSide(color: AppColors.border)),
                 ),
                 child: Wrap(
                   alignment: WrapAlignment.end,
-                  spacing: 10,
-                  runSpacing: 10,
+                  spacing: AppResponsive.controlGap,
+                  runSpacing: AppResponsive.controlGap,
                   children: actions,
                 ),
               ),
@@ -1608,10 +1647,7 @@ class _ResponsiveZonePopup extends StatelessWidget {
       return content;
     }
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
-      child: content,
-    );
+    return ClipRRect(borderRadius: BorderRadius.circular(14), child: content);
   }
 }
 
@@ -1697,6 +1733,3 @@ const List<DropdownMenuItem<String>> _recheckOptions = [
   DropdownMenuItem(value: '30d', child: Text('30 gg')),
   DropdownMenuItem(value: '90d', child: Text('90 gg')),
 ];
-
-
-

@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_responsive.dart';
 
-enum CowNumberSubmitStatus {
-  success,
-  duplicate,
-  invalid,
-  error,
-}
+enum CowNumberSubmitStatus { success, duplicate, invalid, error }
 
 class CowNumberSubmitResult<T> {
   const CowNumberSubmitResult._({
@@ -21,22 +17,22 @@ class CowNumberSubmitResult<T> {
   final String? message;
 
   const CowNumberSubmitResult.success(T value)
-      : this._(status: CowNumberSubmitStatus.success, value: value);
+    : this._(status: CowNumberSubmitStatus.success, value: value);
 
   const CowNumberSubmitResult.duplicate([String? message])
-      : this._(
-          status: CowNumberSubmitStatus.duplicate,
-          message: message ?? 'Capo già presente.',
-        );
+    : this._(
+        status: CowNumberSubmitStatus.duplicate,
+        message: message ?? 'Capo già presente.',
+      );
 
   const CowNumberSubmitResult.invalid([String? message])
-      : this._(
-          status: CowNumberSubmitStatus.invalid,
-          message: message ?? 'Inserisci un numero intero valido.',
-        );
+    : this._(
+        status: CowNumberSubmitStatus.invalid,
+        message: message ?? 'Inserisci un numero intero valido.',
+      );
 
   const CowNumberSubmitResult.error(String message)
-      : this._(status: CowNumberSubmitStatus.error, message: message);
+    : this._(status: CowNumberSubmitStatus.error, message: message);
 }
 
 Future<T?> showCowNumberKeypadDialog<T>({
@@ -199,18 +195,32 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final width = MediaQuery.sizeOf(context).width;
-    final compact = width < 420;
+    final compact = AppResponsive.isCompact(context);
 
     return SafeArea(
       child: AlertDialog(
         insetPadding: EdgeInsets.symmetric(
           horizontal: compact ? 12 : 20,
-          vertical: compact ? 16 : 24,
+          vertical: compact ? 12 : 24,
         ),
-        titlePadding: const EdgeInsets.fromLTRB(18, 16, 18, 0),
-        contentPadding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
-        actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        titlePadding: const EdgeInsets.fromLTRB(
+          AppResponsive.compactHorizontalPadding,
+          AppResponsive.compactVerticalPadding,
+          AppResponsive.compactHorizontalPadding,
+          0,
+        ),
+        contentPadding: const EdgeInsets.fromLTRB(
+          AppResponsive.compactHorizontalPadding,
+          AppResponsive.compactVerticalPadding,
+          AppResponsive.compactHorizontalPadding,
+          AppResponsive.controlGap,
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(
+          AppResponsive.compactHorizontalPadding,
+          0,
+          AppResponsive.compactHorizontalPadding,
+          AppResponsive.compactVerticalPadding,
+        ),
         title: Row(
           children: [
             Expanded(
@@ -230,21 +240,25 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
           ],
         ),
         content: SizedBox(
-          width: compact ? 280 : 320,
+          width: AppResponsive.dialogMaxWidth(context),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(
-                  horizontal: compact ? 12 : 14,
-                  vertical: compact ? 12 : 14,
+                constraints: const BoxConstraints(
+                  minHeight: AppResponsive.primaryActionHeight,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(
-                    color:
-                        _errorText == null ? AppColors.border : AppColors.danger,
+                    color: _errorText == null
+                        ? AppColors.border
+                        : AppColors.danger,
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -253,6 +267,7 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
+                    fontSize: compact ? 24 : 28,
                     color: _displayValue.isEmpty
                         ? AppColors.textSecondary
                         : AppColors.textPrimary,
@@ -260,7 +275,7 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
                 ),
               ),
               if (_errorText != null) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: AppResponsive.controlGap),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -268,20 +283,27 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: AppColors.danger,
                       fontWeight: FontWeight.w700,
+                      fontSize: AppResponsive.secondaryTextSize,
                     ),
                   ),
                 ),
               ],
-              const SizedBox(height: 14),
-              for (var rowIndex = 0; rowIndex < _keypadRows.length; rowIndex++) ...[
+              const SizedBox(height: AppResponsive.compactVerticalPadding),
+              for (
+                var rowIndex = 0;
+                rowIndex < _keypadRows.length;
+                rowIndex++
+              ) ...[
                 Row(
                   children: [
-                    for (var columnIndex = 0;
-                        columnIndex < _keypadRows[rowIndex].length;
-                        columnIndex++) ...[
+                    for (
+                      var columnIndex = 0;
+                      columnIndex < _keypadRows[rowIndex].length;
+                      columnIndex++
+                    ) ...[
                       Expanded(
                         child: SizedBox(
-                          height: compact ? 50 : 54,
+                          height: AppResponsive.primaryActionHeight,
                           child: _KeypadButton(
                             label: _keypadRows[rowIndex][columnIndex],
                             enabled: !_submitting,
@@ -299,11 +321,12 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
                         ),
                       ),
                       if (columnIndex < _keypadRows[rowIndex].length - 1)
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppResponsive.controlGap),
                     ],
                   ],
                 ),
-                if (rowIndex < _keypadRows.length - 1) const SizedBox(height: 8),
+                if (rowIndex < _keypadRows.length - 1)
+                  const SizedBox(height: AppResponsive.controlGap),
               ],
             ],
           ),
@@ -311,10 +334,18 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
         actions: [
           TextButton(
             onPressed: _submitting ? null : () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              minimumSize: const Size(96, AppResponsive.primaryActionHeight),
+              textStyle: AppResponsive.buttonTextStyle(context),
+            ),
             child: const Text('Annulla'),
           ),
           ElevatedButton(
             onPressed: _submitting ? null : _submit,
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(96, AppResponsive.primaryActionHeight),
+              textStyle: AppResponsive.buttonTextStyle(context),
+            ),
             child: Text(_submitting ? 'Attendere...' : 'OK'),
           ),
         ],
@@ -341,17 +372,20 @@ class _KeypadButton extends StatelessWidget {
       onPressed: enabled ? onTap : null,
       style: OutlinedButton.styleFrom(
         padding: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+        minimumSize: const Size(
+          AppResponsive.minTouchTarget,
+          AppResponsive.minTouchTarget,
         ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
       child: isBackspace
           ? const Icon(Icons.backspace_outlined)
           : Text(
               label,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                fontWeight: FontWeight.w800,
+                fontSize: AppResponsive.buttonFontSize,
+              ),
             ),
     );
   }

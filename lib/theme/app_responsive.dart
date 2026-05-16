@@ -1,64 +1,101 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 class AppResponsive {
   const AppResponsive._();
 
-  static const double compactBreakpoint = 520;
-  static const double tabletBreakpoint = 900;
-  static const double minTouchTarget = 48;
-  static const double compactDialogMaxWidth = 420;
-  static const double regularDialogMaxWidth = 560;
-  static const double compactDialogHeightFactor = 0.9;
-  static const double regularDialogHeightFactor = 0.86;
+  static const double minTouchTarget = 48.0;
+  static const double primaryActionHeight = 56.0;
+  static const double controlGap = 8.0;
+  static const double compactHorizontalPadding = 16.0;
+  static const double compactVerticalPadding = 12.0;
+  static const double compactBreakpoint = 600.0;
+  static const double mediumBreakpoint = 900.0;
+  static const double dialogMaxWidthCompactFactor = 0.94;
+  static const double dialogMaxHeightCompactFactor = 0.90;
+  static const double buttonFontSize = 16.0;
+  static const double secondaryTextSize = 14.0;
 
   static bool isCompact(BuildContext context) =>
       MediaQuery.sizeOf(context).width < compactBreakpoint;
 
-  static bool isTablet(BuildContext context) {
+  static bool isMedium(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    return width >= compactBreakpoint && width < tabletBreakpoint;
+    return width >= compactBreakpoint && width < mediumBreakpoint;
   }
 
-  static bool isDesktop(BuildContext context) =>
-      MediaQuery.sizeOf(context).width >= tabletBreakpoint;
+  static bool isWide(BuildContext context) =>
+      MediaQuery.sizeOf(context).width >= mediumBreakpoint;
 
   static EdgeInsets pagePadding(BuildContext context) {
     if (isCompact(context)) {
-      return const EdgeInsets.fromLTRB(12, 12, 12, 20);
+      return const EdgeInsets.fromLTRB(
+        compactHorizontalPadding,
+        compactVerticalPadding,
+        compactHorizontalPadding,
+        compactVerticalPadding + 8,
+      );
     }
-    if (isTablet(context)) {
-      return const EdgeInsets.fromLTRB(18, 16, 18, 24);
+    if (isMedium(context)) {
+      return const EdgeInsets.fromLTRB(20, 16, 20, 24);
     }
     return const EdgeInsets.fromLTRB(24, 20, 24, 28);
   }
 
   static EdgeInsets cardPadding(BuildContext context) {
     if (isCompact(context)) {
-      return const EdgeInsets.all(14);
+      return const EdgeInsets.all(compactVerticalPadding);
     }
-    if (isTablet(context)) {
+    if (isMedium(context)) {
       return const EdgeInsets.all(16);
     }
     return const EdgeInsets.all(18);
   }
 
+  static double contentMaxWidth(BuildContext context) {
+    if (isCompact(context)) {
+      return double.infinity;
+    }
+    if (isMedium(context)) {
+      return 820;
+    }
+    return 980;
+  }
+
   static double dialogMaxWidth(BuildContext context) {
-    return isCompact(context)
-        ? compactDialogMaxWidth
-        : regularDialogMaxWidth;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    if (isCompact(context)) {
+      return screenWidth * dialogMaxWidthCompactFactor;
+    }
+    return math.min(screenWidth - 48, 560.0);
   }
 
   static double dialogMaxHeight(BuildContext context) {
-    final height = MediaQuery.sizeOf(context).height;
-    return height *
-        (isCompact(context)
-            ? compactDialogHeightFactor
-            : regularDialogHeightFactor);
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    if (isCompact(context)) {
+      return screenHeight * dialogMaxHeightCompactFactor;
+    }
+    return screenHeight * 0.86;
   }
 
   static double topBarHeight(BuildContext context) =>
-      isCompact(context) ? 34 : 40;
+      isCompact(context) ? minTouchTarget : 52.0;
+
+  static double smallIconButtonSize(BuildContext context) =>
+      isCompact(context) ? minTouchTarget : 52.0;
 
   static double compactGap(BuildContext context) =>
-      isCompact(context) ? 10 : 14;
+      isCompact(context) ? controlGap : 12.0;
+
+  static TextStyle? buttonTextStyle(BuildContext context) => Theme.of(context)
+      .textTheme
+      .labelLarge
+      ?.copyWith(fontSize: buttonFontSize, fontWeight: FontWeight.w800);
+
+  static TextStyle? secondaryTextStyle(BuildContext context) =>
+      Theme.of(context).textTheme.bodyMedium?.copyWith(
+        fontSize: secondaryTextSize,
+        fontWeight: FontWeight.w600,
+      );
 }
