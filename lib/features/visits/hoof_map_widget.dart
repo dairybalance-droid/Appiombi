@@ -43,7 +43,7 @@ class HoofPairMap extends StatelessWidget {
                   onTapUp: (details) {
                     final localPosition = details.localPosition;
                     final exactHit = zones.reversed.where((zone) {
-                      final path = zone.buildVisiblePath(size);
+                      final path = _displayPathForZone(zone, size);
                       return path.contains(localPosition);
                     });
 
