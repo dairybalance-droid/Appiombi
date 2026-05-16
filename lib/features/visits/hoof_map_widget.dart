@@ -6,6 +6,9 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_responsive.dart';
 import 'hoof_map_models.dart';
 
+const String _hoofCardAssetPath = 'assets/images/hoof_single_card_reference.png';
+const double _hoofCardAspectRatio = 1061 / 1483;
+
 class HoofPairMap extends StatelessWidget {
   const HoofPairMap({
     super.key,
@@ -26,12 +29,15 @@ class HoofPairMap extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final pairBounds = pairBoundsForAvailableWidth(constraints.maxWidth);
+        final cardWidth = math.min(
+          constraints.maxWidth,
+          AppResponsive.maxPhoneContentWidth,
+        );
         final cardRadius = compact ? 18.0 : 20.0;
 
         Widget mapCanvas() {
           return AspectRatio(
-            aspectRatio: pairBounds.width / pairBounds.height,
+            aspectRatio: _hoofCardAspectRatio,
             child: LayoutBuilder(
               builder: (context, painterConstraints) {
                 final size = Size(
@@ -71,12 +77,29 @@ class HoofPairMap extends StatelessWidget {
 
                     onZoneTap(hitZone);
                   },
-                  child: CustomPaint(
-                    painter: _HoofPairPainter(
-                      zones: zones,
-                      observations: observations,
-                    ),
-                    child: const SizedBox.expand(),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(cardRadius),
+                          child: Image.asset(
+                            _hoofCardAssetPath,
+                            fit: BoxFit.fill,
+                            filterQuality: FilterQuality.high,
+                          ),
+                        ),
+                      ),
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _HoofPairOverlayPainter(
+                            zones: zones,
+                            observations: observations,
+                          ),
+                          child: const SizedBox.expand(),
+                        ),
+                      ),
+                    ],
                   ),
                 );
 
@@ -98,41 +121,21 @@ class HoofPairMap extends StatelessWidget {
         }
 
         return ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: pairBounds.width),
-          child: Container(
-            padding: EdgeInsets.fromLTRB(
-              compact ? 10 : 12,
-              compact ? 52 : 56,
-              compact ? 10 : 12,
-              compact ? 10 : 12,
-            ),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFDFDFD),
-              border: Border.all(color: const Color(0xFFD7DADF), width: 1),
-              borderRadius: BorderRadius.circular(cardRadius),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x12000000),
-                  blurRadius: 12,
-                  offset: Offset(0, 4),
+          constraints: BoxConstraints(maxWidth: cardWidth),
+          child: Stack(
+            clipBehavior: Clip.hardEdge,
+            children: [
+              mapCanvas(),
+              Positioned(
+                left: compact ? 10 : 12,
+                top: compact ? 10 : 12,
+                child: _FootBadge(
+                  label: footLabel,
+                  subtitle: _footSubtitle(footLabel),
+                  compact: compact,
                 ),
-              ],
-            ),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                mapCanvas(),
-                Positioned(
-                  left: -1,
-                  top: -(compact ? 42.0 : 46.0),
-                  child: _FootBadge(
-                    label: footLabel,
-                    subtitle: _footSubtitle(footLabel),
-                    compact: compact,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -140,26 +143,25 @@ class HoofPairMap extends StatelessWidget {
   }
 }
 
-class _HoofPairPainter extends CustomPainter {
-  const _HoofPairPainter({required this.zones, required this.observations});
+class _HoofPairOverlayPainter extends CustomPainter {
+  const _HoofPairOverlayPainter({
+    required this.zones,
+    required this.observations,
+  });
 
   final List<HoofMapZoneDefinition> zones;
   final Map<String, HoofZoneObservation> observations;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final shadowPaint = Paint()
-      ..color = const Color(0x06000000)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
-
     for (final zone in zones) {
-      final visiblePath = _displayPathForZone(zone, size);
       final observation = observations[zone.zoneCode];
-      final isActive = observation?.isActive == true;
+      if (observation?.isActive != true) {
+        continue;
+      }
 
-      final fillColor = isActive
-          ? activeFillForFamily(zone.zoneFamily)
-          : _inactiveFillForFamily(zone.zoneFamily);
+      final visiblePath = _displayPathForZone(zone, size);
+      final fillColor = activeFillForFamily(zone.zoneFamily);
 
       final fillPaint = Paint()
         ..style = PaintingStyle.fill
@@ -172,10 +174,6 @@ class _HoofPairPainter extends CustomPainter {
         ..strokeJoin = StrokeJoin.round
         ..color = borderColorForFamily(zone.zoneFamily);
 
-      if (zone.zoneFamily != HoofZoneFamily.skin) {
-        canvas.drawPath(visiblePath.shift(const Offset(0, 1.5)), shadowPaint);
-      }
-
       canvas.drawPath(visiblePath, fillPaint);
 
       if (zone.zoneFamily == HoofZoneFamily.skin) {
@@ -187,7 +185,7 @@ class _HoofPairPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _HoofPairPainter oldDelegate) {
+  bool shouldRepaint(covariant _HoofPairOverlayPainter oldDelegate) {
     return oldDelegate.observations != observations ||
         oldDelegate.zones != zones;
   }
@@ -220,7 +218,7 @@ class _FootBadge extends StatelessWidget {
           compact ? 7 : 8,
         ),
         decoration: const BoxDecoration(
-          color: Color(0xFFF8F9FB),
+          color: Color(0xF7F8F9FB),
           border: Border(
             top: BorderSide(color: Color(0xFFD7DADF)),
             left: BorderSide(color: Color(0xFFD7DADF)),
@@ -626,16 +624,6 @@ double _strokeWidthForFamily(HoofZoneFamily family) {
     case HoofZoneFamily.horn:
     case HoofZoneFamily.accessoryDigit:
       return 2.2;
-  }
-}
-
-Color _inactiveFillForFamily(HoofZoneFamily family) {
-  switch (family) {
-    case HoofZoneFamily.skin:
-      return const Color(0xFFFFFCFC);
-    case HoofZoneFamily.horn:
-    case HoofZoneFamily.accessoryDigit:
-      return Colors.white;
   }
 }
 

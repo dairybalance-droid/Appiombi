@@ -25,3 +25,4 @@ flutter:
   assets:
     - .env
     - .env.example
+    - assets/images/hoof_single_card_reference.png
