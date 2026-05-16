@@ -79,19 +79,11 @@ class _CowNumberKeypadDialog<T> extends StatefulWidget {
 }
 
 class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
-  static const _keypadLabels = <String>[
-    '1',
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    '-',
-    '0',
-    'backspace',
+  static const _keypadRows = <List<String>>[
+    ['1', '2', '3'],
+    ['4', '5', '6'],
+    ['7', '8', '9'],
+    ['-', '0', 'backspace'],
   ];
 
   late String _displayValue;
@@ -237,80 +229,83 @@ class _CowNumberKeypadDialogState<T> extends State<_CowNumberKeypadDialog<T>> {
             ),
           ],
         ),
-        content: SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 320),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: compact ? 12 : 14,
-                    vertical: compact ? 12 : 14,
+        content: SizedBox(
+          width: compact ? 280 : 320,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(
+                  horizontal: compact ? 12 : 14,
+                  vertical: compact ? 12 : 14,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(
+                    color:
+                        _errorText == null ? AppColors.border : AppColors.danger,
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(
-                      color:
-                          _errorText == null ? AppColors.border : AppColors.danger,
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    _displayValue.isEmpty ? 'Numero capo' : _displayValue,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: _displayValue.isEmpty
-                          ? AppColors.textSecondary
-                          : AppColors.textPrimary,
-                    ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  _displayValue.isEmpty ? 'Numero capo' : _displayValue,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: _displayValue.isEmpty
+                        ? AppColors.textSecondary
+                        : AppColors.textPrimary,
                   ),
                 ),
-                if (_errorText != null) ...[
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      _errorText!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppColors.danger,
-                        fontWeight: FontWeight.w700,
-                      ),
+              ),
+              if (_errorText != null) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _errorText!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: AppColors.danger,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ],
-                const SizedBox(height: 14),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _keypadLabels.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    mainAxisExtent: compact ? 50 : 54,
-                  ),
-                  itemBuilder: (context, index) {
-                    final label = _keypadLabels[index];
-                    return _KeypadButton(
-                      label: label,
-                      enabled: !_submitting,
-                      onTap: () {
-                        if (label == 'backspace') {
-                          _onBackspace();
-                        } else if (label == '-') {
-                          _onToggleNegative();
-                        } else {
-                          _onDigit(label);
-                        }
-                      },
-                    );
-                  },
                 ),
               ],
-            ),
+              const SizedBox(height: 14),
+              for (var rowIndex = 0; rowIndex < _keypadRows.length; rowIndex++) ...[
+                Row(
+                  children: [
+                    for (var columnIndex = 0;
+                        columnIndex < _keypadRows[rowIndex].length;
+                        columnIndex++) ...[
+                      Expanded(
+                        child: SizedBox(
+                          height: compact ? 50 : 54,
+                          child: _KeypadButton(
+                            label: _keypadRows[rowIndex][columnIndex],
+                            enabled: !_submitting,
+                            onTap: () {
+                              final label = _keypadRows[rowIndex][columnIndex];
+                              if (label == 'backspace') {
+                                _onBackspace();
+                              } else if (label == '-') {
+                                _onToggleNegative();
+                              } else {
+                                _onDigit(label);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      if (columnIndex < _keypadRows[rowIndex].length - 1)
+                        const SizedBox(width: 8),
+                    ],
+                  ],
+                ),
+                if (rowIndex < _keypadRows.length - 1) const SizedBox(height: 8),
+              ],
+            ],
           ),
         ),
         actions: [
