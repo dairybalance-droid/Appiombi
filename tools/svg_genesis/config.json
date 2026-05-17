@@ -1,7 +1,7 @@
 {
-  "reference_png": "../../assets/images/hoof_single_card_reference.png",
-  "target_svg": "../../assets/images/hoof_logo.svg",
-  "fallback_svg": "../../assets/images/hoof_single_card_master.svg",
+  "reference_png": "../../assets/clinical_maps/claw/international_claw_map/v1/reference/hoof_single_card_reference.png",
+  "target_svg": "../../assets/clinical_maps/claw/international_claw_map/v1/svg/clickable/hoof_single_card_clickable.svg",
+  "fallback_svg": "../../assets/clinical_maps/claw/international_claw_map/v1/svg/master/hoof_single_card_master.svg",
   "output_dir": "./outputs",
   "canvas_width": 1024,
   "canvas_height": 1024,

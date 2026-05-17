@@ -1,0 +1,88 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1061 1483"
+  width="1061"
+  height="1483"
+>
+  <title>Hoof single card master draft</title>
+  <desc>
+    First draft master geometry for Appiombi hoof card. Contains only
+    card_background, card_border, C1_UG, C2_UG and SKIN_12_Nod.
+  </desc>
+
+  <rect
+    id="card_background"
+    x="56"
+    y="46"
+    width="949"
+    height="1391"
+    rx="78"
+    ry="78"
+    fill="#fbfcfd"
+  />
+
+  <path
+    id="card_border"
+    d="M134 46 H927
+       C970 46 1005 81 1005 124
+       V1359
+       C1005 1402 970 1437 927 1437
+       H134
+       C91 1437 56 1402 56 1359
+       V124
+       C56 81 91 46 134 46 Z"
+    fill="none"
+    stroke="#cfd5dc"
+    stroke-width="8"
+    stroke-linejoin="round"
+  />
+
+  <path
+    id="C1_UG"
+    d="M320 214
+       C341 181 352 165 364 149
+       C374 136 382 135 389 145
+       C404 175 422 216 444 281
+       C447 292 441 299 430 301
+       C375 311 327 320 248 334
+       C235 336 229 329 232 319
+       C257 279 280 247 320 214 Z"
+    fill="rgba(255,255,255,0.001)"
+    stroke="#151515"
+    stroke-width="8"
+    stroke-linejoin="round"
+  />
+
+  <path
+    id="C2_UG"
+    d="M740 214
+       C719 181 708 165 696 149
+       C686 136 678 135 671 145
+       C656 175 638 216 616 281
+       C613 292 619 299 630 301
+       C685 311 733 320 812 334
+       C825 336 831 329 828 319
+       C803 279 780 247 740 214 Z"
+    fill="rgba(255,255,255,0.001)"
+    stroke="#151515"
+    stroke-width="8"
+    stroke-linejoin="round"
+  />
+
+  <path
+    id="SKIN_12_Nod"
+    d="M416 231
+       C439 200 484 181 530 181
+       C577 181 622 200 645 231
+       C655 245 653 273 640 290
+       C614 324 572 338 530 338
+       C488 338 446 324 420 290
+       C407 273 405 245 416 231 Z"
+    fill="rgba(255,255,255,0.001)"
+    stroke="#d16c85"
+    stroke-width="8"
+    stroke-dasharray="20 14"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

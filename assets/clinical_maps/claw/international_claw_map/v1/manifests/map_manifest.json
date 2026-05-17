@@ -1,0 +1,17 @@
+{
+  "map_id": "international_claw_map",
+  "version": 1,
+  "name": "International Claw Map",
+  "species": "bovine",
+  "anatomical_domain": "claw",
+  "reference_image": "../reference/hoof_single_card_reference.png",
+  "master_svg": "../svg/master/hoof_single_card_master.svg",
+  "clickable_svg": "../svg/clickable/hoof_single_card_clickable.svg",
+  "anatomical_areas_manifest": "./anatomical_areas.json",
+  "status": "draft_asset_structure",
+  "notes": [
+    "Initial versioned clinical map asset structure.",
+    "The clickable SVG is a placeholder and is not connected to the Flutter runtime yet.",
+    "Definitive anatomical area IDs will be validated in a later phase."
+  ]
+}

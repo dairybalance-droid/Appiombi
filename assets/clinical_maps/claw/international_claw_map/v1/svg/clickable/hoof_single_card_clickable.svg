@@ -1,0 +1,32 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1061 1483"
+  width="1061"
+  height="1483"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">International Claw Map clickable SVG placeholder</title>
+  <desc id="desc">
+    Placeholder for the future clickable vector map used by Appiombi. This file
+    intentionally contains no embedded raster PNG and is not connected to the
+    Flutter runtime yet.
+  </desc>
+
+  <!--
+    Future clickable SVG requirements:
+    - one stable SVG element id per anatomical area;
+    - ids aligned with manifests/anatomical_areas.json;
+    - no embedded PNG reference image;
+    - geometry refined through tools/svg_genesis before runtime integration.
+  -->
+
+  <rect
+    id="clickable_canvas_placeholder"
+    x="0"
+    y="0"
+    width="1061"
+    height="1483"
+    fill="none"
+  />
+</svg>
