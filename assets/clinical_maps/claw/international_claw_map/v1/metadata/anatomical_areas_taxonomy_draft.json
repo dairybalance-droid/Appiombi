@@ -1,0 +1,239 @@
+{
+  "schema_version": 1,
+  "map_id": "international_claw_map",
+  "version": 1,
+  "status": "draft_taxonomy_proposal",
+  "is_definitive": false,
+  "source_files": [
+    "lib/features/visits/hoof_map_models.dart",
+    "lib/features/visits/hoof_map_widget.dart",
+    "assets/clinical_maps/claw/international_claw_map/v1/manifests/anatomical_areas.json",
+    "assets/clinical_maps/claw/international_claw_map/v1/metadata/clickable_area_mapping_draft.json"
+  ],
+  "notes": [
+    "This is a technical draft derived from existing Flutter definitions.",
+    "It must not be used as a runtime source of truth.",
+    "It must not be promoted to manifests/anatomical_areas.json until reviewed by a human clinical decision maker.",
+    "Fields marked requires_human_approval are intentionally not definitive."
+  ],
+  "candidate_area_count": 80,
+  "generation_model": {
+    "claw_zone_count": 56,
+    "central_skin_zone_count": 16,
+    "lateral_skin_zone_count": 8
+  },
+  "foot_pairs": [
+    {
+      "foot_label": "AS",
+      "pair_code": "12",
+      "left_claw_number": 1,
+      "right_claw_number": 2,
+      "left_position_it": "anteriore sinistro esterno",
+      "right_position_it": "anteriore sinistro interno",
+      "requires_human_approval": true
+    },
+    {
+      "foot_label": "AD",
+      "pair_code": "34",
+      "left_claw_number": 3,
+      "right_claw_number": 4,
+      "left_position_it": "anteriore destro interno",
+      "right_position_it": "anteriore destro esterno",
+      "requires_human_approval": true
+    },
+    {
+      "foot_label": "PS",
+      "pair_code": "56",
+      "left_claw_number": 5,
+      "right_claw_number": 6,
+      "left_position_it": "posteriore sinistro esterno",
+      "right_position_it": "posteriore sinistro interno",
+      "requires_human_approval": true
+    },
+    {
+      "foot_label": "PD",
+      "pair_code": "78",
+      "left_claw_number": 7,
+      "right_claw_number": 8,
+      "left_position_it": "posteriore destro interno",
+      "right_position_it": "posteriore destro esterno",
+      "requires_human_approval": true
+    }
+  ],
+  "zone_templates": [
+    {
+      "template_id": "claw_bulb",
+      "id_pattern": "C{claw_number}_B",
+      "svg_element_id_pattern": "C{claw_number}_B",
+      "flutter_zone_family": "horn",
+      "proposed_zone_type": "horn",
+      "proposed_zone_code": "bulb",
+      "proposed_observation_group": "horn_lesion",
+      "popup_kind": "horn",
+      "label_it": "Bulbo",
+      "label_en": "Bulb",
+      "is_clickable": true,
+      "requires_human_approval": true
+    },
+    {
+      "template_id": "claw_sole",
+      "id_pattern": "C{claw_number}_S",
+      "svg_element_id_pattern": "C{claw_number}_S",
+      "flutter_zone_family": "horn",
+      "proposed_zone_type": "horn",
+      "proposed_zone_code": "sole",
+      "proposed_observation_group": "horn_lesion",
+      "popup_kind": "horn",
+      "label_it": "Suola",
+      "label_en": "Sole",
+      "is_clickable": true,
+      "requires_human_approval": true
+    },
+    {
+      "template_id": "claw_toe",
+      "id_pattern": "C{claw_number}_P",
+      "svg_element_id_pattern": "C{claw_number}_P",
+      "flutter_zone_family": "horn",
+      "proposed_zone_type": "horn",
+      "proposed_zone_code": "toe",
+      "proposed_observation_group": "horn_lesion",
+      "popup_kind": "horn",
+      "label_it": "Punta",
+      "label_en": "Toe",
+      "is_clickable": true,
+      "requires_human_approval": true
+    },
+    {
+      "template_id": "claw_apex",
+      "id_pattern": "C{claw_number}_APX",
+      "svg_element_id_pattern": "C{claw_number}_APX",
+      "flutter_zone_family": "horn",
+      "proposed_zone_type": "horn",
+      "proposed_zone_code": "apex",
+      "proposed_observation_group": "horn_lesion",
+      "popup_kind": "horn",
+      "label_it": "Apice",
+      "label_en": "Apex",
+      "is_clickable": true,
+      "requires_human_approval": true
+    },
+    {
+      "template_id": "claw_abaxial_white_line",
+      "id_pattern": "C{claw_number}_LBab",
+      "svg_element_id_pattern": "C{claw_number}_LBab",
+      "flutter_zone_family": "horn",
+      "proposed_zone_type": "horn",
+      "proposed_zone_code": "abaxial_white_line",
+      "proposed_observation_group": "horn_lesion",
+      "popup_kind": "horn",
+      "label_it": "Linea bianca abassiale",
+      "label_en": "Abaxial white line",
+      "is_clickable": true,
+      "requires_human_approval": true
+    },
+    {
+      "template_id": "claw_axial_white_line",
+      "id_pattern": "C{claw_number}_LBax",
+      "svg_element_id_pattern": "C{claw_number}_LBax",
+      "flutter_zone_family": "horn",
+      "proposed_zone_type": "horn",
+      "proposed_zone_code": "axial_white_line",
+      "proposed_observation_group": "horn_lesion",
+      "popup_kind": "horn",
+      "label_it": "Linea bianca assiale",
+      "label_en": "Axial white line",
+      "is_clickable": true,
+      "requires_human_approval": true
+    },
+    {
+      "template_id": "accessory_digit",
+      "id_pattern": "C{claw_number}_UG",
+      "svg_element_id_pattern": "C{claw_number}_UG",
+      "flutter_zone_family": "accessoryDigit",
+      "proposed_zone_type": "horn",
+      "proposed_zone_code": "accessory_digit",
+      "proposed_observation_group": "horn_lesion",
+      "popup_kind": "horn",
+      "label_it": "Unghiello",
+      "label_en": "Accessory digit",
+      "is_clickable": true,
+      "requires_human_approval": true
+    },
+    {
+      "template_id": "central_skin_nodello",
+      "id_pattern": "SKIN_{pair_code}_Nod",
+      "svg_element_id_pattern": "SKIN_{pair_code}_Nod",
+      "flutter_zone_family": "skin",
+      "proposed_zone_type": "derma",
+      "proposed_zone_code": "nodello",
+      "proposed_observation_group": "derma_lesion",
+      "popup_kind": "skin",
+      "label_it": "Nodello",
+      "label_en": "Pastern",
+      "is_clickable": true,
+      "requires_human_approval": true
+    },
+    {
+      "template_id": "central_skin_digital",
+      "id_pattern": "SKIN_{pair_code}_D",
+      "svg_element_id_pattern": "SKIN_{pair_code}_D",
+      "flutter_zone_family": "skin",
+      "proposed_zone_type": "derma",
+      "proposed_zone_code": "digital",
+      "proposed_observation_group": "derma_lesion",
+      "popup_kind": "skin",
+      "label_it": "Digitale",
+      "label_en": "Digital",
+      "is_clickable": true,
+      "requires_human_approval": true
+    },
+    {
+      "template_id": "central_skin_interdigital",
+      "id_pattern": "SKIN_{pair_code}_ID",
+      "svg_element_id_pattern": "SKIN_{pair_code}_ID",
+      "flutter_zone_family": "skin",
+      "proposed_zone_type": "derma",
+      "proposed_zone_code": "interdigital",
+      "proposed_observation_group": "derma_lesion",
+      "popup_kind": "skin",
+      "label_it": "Interdigitale",
+      "label_en": "Interdigital",
+      "is_clickable": true,
+      "requires_human_approval": true
+    },
+    {
+      "template_id": "central_skin_dorsal",
+      "id_pattern": "SKIN_{pair_code}_Dors",
+      "svg_element_id_pattern": "SKIN_{pair_code}_Dors",
+      "flutter_zone_family": "skin",
+      "proposed_zone_type": "derma",
+      "proposed_zone_code": "dorsal",
+      "proposed_observation_group": "derma_lesion",
+      "popup_kind": "skin",
+      "label_it": "Dorsale",
+      "label_en": "Dorsal",
+      "is_clickable": true,
+      "requires_human_approval": true
+    },
+    {
+      "template_id": "lateral_skin",
+      "id_pattern": "SKIN_C{claw_number}_LAT",
+      "svg_element_id_pattern": "SKIN_C{claw_number}_LAT",
+      "flutter_zone_family": "skin",
+      "proposed_zone_type": "derma",
+      "proposed_zone_code": "lateral_skin",
+      "proposed_observation_group": "derma_lesion",
+      "popup_kind": "skin",
+      "label_it": "Cute laterale",
+      "label_en": "Lateral skin",
+      "is_clickable": true,
+      "requires_human_approval": true
+    }
+  ],
+  "promotion_blockers": [
+    "Clickable SVG does not yet contain the full set of matching element ids.",
+    "Clinical labels and storage zone codes require human approval.",
+    "The existing database enum supports zone_type values horn and derma; Flutter currently uses horn, accessoryDigit and skin.",
+    "No runtime Flutter integration should use this draft directly."
+  ]
+}

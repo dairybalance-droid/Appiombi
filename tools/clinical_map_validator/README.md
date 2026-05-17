@@ -21,6 +21,12 @@ Dalla root del repository:
 python tools/clinical_map_validator/validate_clinical_map.py
 ```
 
+Per controllare anche la proposta draft tassonomica:
+
+```bash
+python tools/clinical_map_validator/validate_clinical_map.py --draft-taxonomy assets/clinical_maps/claw/international_claw_map/v1/metadata/anatomical_areas_taxonomy_draft.json
+```
+
 Su ambienti senza Python nel PATH, usare il runtime Python disponibile.
 
 ## Nota
