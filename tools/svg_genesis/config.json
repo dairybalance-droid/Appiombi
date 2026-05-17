@@ -1,0 +1,9 @@
+{
+  "reference_png": "../../assets/images/hoof_single_card_reference.png",
+  "target_svg": "../../assets/images/hoof_logo.svg",
+  "fallback_svg": "../../assets/images/hoof_single_card_master.svg",
+  "output_dir": "./outputs",
+  "canvas_width": 1024,
+  "canvas_height": 1024,
+  "svg_initial_opacity": 0.45
+}
