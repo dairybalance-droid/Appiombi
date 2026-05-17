@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "map_id": "international_claw_map",
+  "version": 1,
+  "status": "draft_proposal",
+  "is_definitive": false,
+  "notes": [
+    "Draft technical mapping from current master SVG ids to future manifest areas.",
+    "This file is not a clinical taxonomy and must not be used as runtime source of truth.",
+    "All zone_type, zone_code, observation_group and labels require human clinical approval before promotion to anatomical_areas.json."
+  ],
+  "source_svg": "../svg/master/hoof_single_card_master.svg",
+  "target_manifest": "../manifests/anatomical_areas.json",
+  "non_clickable_svg_ids": [
+    {
+      "id": "card_background",
+      "reason": "Card background, not an anatomical area."
+    },
+    {
+      "id": "card_border",
+      "reason": "Card border, not an anatomical area."
+    },
+    {
+      "id": "clickable_canvas_placeholder",
+      "reason": "Placeholder element in clickable SVG, not an anatomical area."
+    },
+    {
+      "id": "title",
+      "reason": "SVG accessibility/title metadata."
+    },
+    {
+      "id": "desc",
+      "reason": "SVG accessibility/description metadata."
+    }
+  ],
+  "candidate_areas": [
+    {
+      "id": "draft_C1_UG",
+      "svg_element_id": "C1_UG",
+      "claw_number": 1,
+      "limb": null,
+      "digit": null,
+      "zone_type": null,
+      "zone_code": null,
+      "observation_group": null,
+      "popup_kind": null,
+      "label_it": "Bozza area C1_UG",
+      "label_en": "Draft C1_UG area",
+      "is_clickable": true,
+      "approval_status": "requires_clinical_review"
+    },
+    {
+      "id": "draft_C2_UG",
+      "svg_element_id": "C2_UG",
+      "claw_number": 2,
+      "limb": null,
+      "digit": null,
+      "zone_type": null,
+      "zone_code": null,
+      "observation_group": null,
+      "popup_kind": null,
+      "label_it": "Bozza area C2_UG",
+      "label_en": "Draft C2_UG area",
+      "is_clickable": true,
+      "approval_status": "requires_clinical_review"
+    },
+    {
+      "id": "draft_SKIN_12_Nod",
+      "svg_element_id": "SKIN_12_Nod",
+      "claw_number": null,
+      "limb": null,
+      "digit": null,
+      "zone_type": null,
+      "zone_code": null,
+      "observation_group": null,
+      "popup_kind": null,
+      "label_it": "Bozza area SKIN_12_Nod",
+      "label_en": "Draft SKIN_12_Nod area",
+      "is_clickable": true,
+      "approval_status": "requires_clinical_review"
+    }
+  ]
+}

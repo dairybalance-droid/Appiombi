@@ -17,6 +17,8 @@ Questa struttura non e ancora collegata al runtime Flutter. Per ora la PNG refer
 - `svg/clickable/hoof_single_card_clickable.svg`: placeholder del futuro SVG cliccabile.
 - `manifests/map_manifest.json`: metadati generali della mappa.
 - `manifests/anatomical_areas.json`: schema iniziale per le aree anatomiche.
+- `metadata/svg_master_id_analysis.md`: analisi tecnica degli ID presenti nel master SVG.
+- `metadata/clickable_area_mapping_draft.json`: proposta draft, non definitiva, di mapping tra ID SVG e future aree manifest.
 
 ## Regole
 
@@ -24,3 +26,7 @@ Questa struttura non e ancora collegata al runtime Flutter. Per ora la PNG refer
 - Non incorporare PNG raster dentro lo SVG cliccabile.
 - Non collegare questa struttura a Flutter finche manifest e ID anatomici non sono validati.
 - Quando una mappa clinica cambia in modo incompatibile, creare una nuova versione invece di rompere `v1`.
+
+## Validator
+
+Il validator tecnico vive in `tools/clinical_map_validator/`. Serve a controllare JSON, SVG e coerenza degli ID, ma non approva tassonomie cliniche.
