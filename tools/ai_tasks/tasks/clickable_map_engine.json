@@ -1,0 +1,40 @@
+{
+  "task_id": "clickable_map_engine",
+  "recommended_branch": "feature/clickable-map-engine",
+  "workflow_doc": "docs/ai_workflows/workflows/clickable_map_engine.md",
+  "allowed_paths": [
+    "lib/features/visits/**",
+    "assets/clinical_maps/**",
+    "test/**",
+    "docs/ai_workflows/workflows/clickable_map_engine.md",
+    "tools/ai_tasks/tasks/clickable_map_engine.json"
+  ],
+  "forbidden_paths": [
+    "supabase/schema.sql",
+    "supabase/migrations/**",
+    "pubspec.yaml",
+    "assets/images/hoof_single_card_reference.png",
+    "assets/images/hoof_single_card_master.svg",
+    "tools/hoof_svg_trace_preview.html"
+  ],
+  "required_inputs": [
+    "assets/clinical_maps/claw/international_claw_map/v1/manifests/map_manifest.json",
+    "assets/clinical_maps/claw/international_claw_map/v1/manifests/anatomical_areas.json"
+  ],
+  "expected_outputs": [
+    "Dart parser for map manifest",
+    "responsive clickable renderer",
+    "hit-test flow",
+    "database-ready click payload"
+  ],
+  "commands": [
+    "git branch --show-current",
+    "git status --short",
+    "flutter test"
+  ],
+  "checklist": [
+    "docs/ai_workflows/checklists/asset_safety.md",
+    "docs/ai_workflows/checklists/pre_commit.md"
+  ],
+  "final_report_template": "tools/ai_tasks/templates/final_report.md"
+}

@@ -1,0 +1,41 @@
+{
+  "task_id": "svg_genesis_pipeline",
+  "recommended_branch": "feature/svg-genesis-pipeline",
+  "workflow_doc": "docs/ai_workflows/workflows/svg_genesis.md",
+  "allowed_paths": [
+    "tools/svg_genesis/**",
+    "docs/ai_workflows/workflows/svg_genesis.md",
+    "tools/ai_tasks/tasks/svg_genesis_pipeline.json"
+  ],
+  "forbidden_paths": [
+    "assets/images/hoof_single_card_reference.png",
+    "assets/images/hoof_single_card_master.svg",
+    "tools/hoof_svg_trace_preview.html",
+    "tools/svg_genesis/outputs/*.png",
+    "tools/svg_genesis/outputs/*.json",
+    "tools/svg_genesis/outputs/*.md",
+    "lib/**",
+    "pubspec.yaml"
+  ],
+  "required_inputs": [
+    "tools/svg_genesis/config.json",
+    "assets/images/hoof_single_card_reference.png"
+  ],
+  "expected_outputs": [
+    "tools/svg_genesis/outputs/svg_render_latest.png",
+    "tools/svg_genesis/outputs/overlay_latest.png",
+    "tools/svg_genesis/outputs/diff_latest.png",
+    "tools/svg_genesis/outputs/score_latest.json",
+    "tools/svg_genesis/outputs/report_latest.md"
+  ],
+  "commands": [
+    "git branch --show-current",
+    "git status --short",
+    "python tools/svg_genesis/run_svg_genesis.py"
+  ],
+  "checklist": [
+    "docs/ai_workflows/checklists/asset_safety.md",
+    "docs/ai_workflows/checklists/pre_commit.md"
+  ],
+  "final_report_template": "tools/ai_tasks/templates/final_report.md"
+}

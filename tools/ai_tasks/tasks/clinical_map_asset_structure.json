@@ -1,0 +1,38 @@
+{
+  "task_id": "clinical_map_asset_structure",
+  "recommended_branch": "feature/clinical-map-asset-structure",
+  "workflow_doc": "docs/ai_workflows/workflows/clinical_map_asset_structure.md",
+  "allowed_paths": [
+    "assets/clinical_maps/**",
+    "docs/ai_workflows/workflows/clinical_map_asset_structure.md",
+    "tools/ai_tasks/tasks/clinical_map_asset_structure.json"
+  ],
+  "forbidden_paths": [
+    "assets/images/hoof_single_card_reference.png",
+    "assets/images/hoof_single_card_master.svg",
+    "lib/**",
+    "pubspec.yaml",
+    "supabase/**",
+    "tools/svg_genesis/**",
+    "tools/hoof_svg_trace_preview.html"
+  ],
+  "required_inputs": [
+    "assets/images/hoof_single_card_reference.png",
+    "assets/images/hoof_single_card_master.svg"
+  ],
+  "expected_outputs": [
+    "assets/clinical_maps/claw/international_claw_map/v1/reference/",
+    "assets/clinical_maps/claw/international_claw_map/v1/svg/master/",
+    "assets/clinical_maps/claw/international_claw_map/v1/svg/clickable/",
+    "assets/clinical_maps/claw/international_claw_map/v1/manifests/"
+  ],
+  "commands": [
+    "git branch --show-current",
+    "git status --short"
+  ],
+  "checklist": [
+    "docs/ai_workflows/checklists/asset_safety.md",
+    "docs/ai_workflows/checklists/pre_commit.md"
+  ],
+  "final_report_template": "tools/ai_tasks/templates/final_report.md"
+}
