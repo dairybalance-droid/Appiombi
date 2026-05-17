@@ -1,0 +1,2204 @@
+﻿{
+    "schema_version":  1,
+    "map_id":  "international_claw_map",
+    "version":  1,
+    "status":  "proposed_final_pending_review",
+    "is_definitive":  false,
+    "candidate_area_count":  80,
+    "source_files":  [
+                         "metadata/taxonomy_human_review.csv",
+                         "metadata/anatomical_areas_taxonomy_draft.json",
+                         "metadata/area_taxonomy_analysis.md"
+                     ],
+    "approved_decisions_applied":  [
+                                       "Only horn and derma macro zone types are used.",
+                                       "Accessory digit / unghiello / UG is treated as horn.",
+                                       "Periungual / skin zones are treated as derma.",
+                                       "horn areas use observation_group horn_lesion and popup_kind horn.",
+                                       "derma areas use observation_group derma_lesion and popup_kind skin.",
+                                       "White line ids use WL_AB and WL_AX with legacy ids preserved."
+                                   ],
+    "promotion_blockers":  [
+                               "This file is not the definitive manifest.",
+                               "Exact correspondence with final clickable SVG paths still requires review.",
+                               "Terminology alignment with the official International Claw Map should be reviewed before promotion."
+                           ],
+    "areas":  [
+                  {
+                      "id":  "C1_B",
+                      "svg_element_id":  "C1_B",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  1,
+                      "related_claws":  [
+                                            1
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "bulb",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Bulbo",
+                      "label_en":  "Bulb",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C1_S",
+                      "svg_element_id":  "C1_S",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  1,
+                      "related_claws":  [
+                                            1
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "sole",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Suola",
+                      "label_en":  "Sole",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C1_P",
+                      "svg_element_id":  "C1_P",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  1,
+                      "related_claws":  [
+                                            1
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "toe",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Punta",
+                      "label_en":  "Toe",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C1_APX",
+                      "svg_element_id":  "C1_APX",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  1,
+                      "related_claws":  [
+                                            1
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "apex",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Apice",
+                      "label_en":  "Apex",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C1_WL_AB",
+                      "svg_element_id":  "C1_WL_AB",
+                      "legacy_id":  "C1_LBab",
+                      "expected_legacy_svg_element_id":  "C1_LBab",
+                      "claw_number":  1,
+                      "related_claws":  [
+                                            1
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_abaxial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca abassiale",
+                      "label_en":  "Abaxial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C1_WL_AX",
+                      "svg_element_id":  "C1_WL_AX",
+                      "legacy_id":  "C1_LBax",
+                      "expected_legacy_svg_element_id":  "C1_LBax",
+                      "claw_number":  1,
+                      "related_claws":  [
+                                            1
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_axial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca assiale",
+                      "label_en":  "Axial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C1_UG",
+                      "svg_element_id":  "C1_UG",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  1,
+                      "related_claws":  [
+                                            1
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "accessory_digit",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Unghiello",
+                      "label_en":  "Accessory digit",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_C1_LAT",
+                      "svg_element_id":  "SKIN_C1_LAT",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  1,
+                      "related_claws":  [
+                                            1
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "external",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_lateral",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Cute laterale",
+                      "label_en":  "Lateral skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C2_B",
+                      "svg_element_id":  "C2_B",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  2,
+                      "related_claws":  [
+                                            2
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "bulb",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Bulbo",
+                      "label_en":  "Bulb",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C2_S",
+                      "svg_element_id":  "C2_S",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  2,
+                      "related_claws":  [
+                                            2
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "sole",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Suola",
+                      "label_en":  "Sole",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C2_P",
+                      "svg_element_id":  "C2_P",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  2,
+                      "related_claws":  [
+                                            2
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "toe",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Punta",
+                      "label_en":  "Toe",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C2_APX",
+                      "svg_element_id":  "C2_APX",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  2,
+                      "related_claws":  [
+                                            2
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "apex",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Apice",
+                      "label_en":  "Apex",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C2_WL_AB",
+                      "svg_element_id":  "C2_WL_AB",
+                      "legacy_id":  "C2_LBab",
+                      "expected_legacy_svg_element_id":  "C2_LBab",
+                      "claw_number":  2,
+                      "related_claws":  [
+                                            2
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_abaxial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca abassiale",
+                      "label_en":  "Abaxial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C2_WL_AX",
+                      "svg_element_id":  "C2_WL_AX",
+                      "legacy_id":  "C2_LBax",
+                      "expected_legacy_svg_element_id":  "C2_LBax",
+                      "claw_number":  2,
+                      "related_claws":  [
+                                            2
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_axial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca assiale",
+                      "label_en":  "Axial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C2_UG",
+                      "svg_element_id":  "C2_UG",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  2,
+                      "related_claws":  [
+                                            2
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "accessory_digit",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Unghiello",
+                      "label_en":  "Accessory digit",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_C2_LAT",
+                      "svg_element_id":  "SKIN_C2_LAT",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  2,
+                      "related_claws":  [
+                                            2
+                                        ],
+                      "limb":  "left_front",
+                      "digit":  "internal",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_lateral",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Cute laterale",
+                      "label_en":  "Lateral skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_12_Nod",
+                      "svg_element_id":  "SKIN_12_Nod",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            1,
+                                            2
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_nodello",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Nodello",
+                      "label_en":  "Pastern",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_12_D",
+                      "svg_element_id":  "SKIN_12_D",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            1,
+                                            2
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_digital",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Digitale",
+                      "label_en":  "Digital skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_12_ID",
+                      "svg_element_id":  "SKIN_12_ID",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            1,
+                                            2
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_interdigital",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Interdigitale",
+                      "label_en":  "Interdigital skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_12_Dors",
+                      "svg_element_id":  "SKIN_12_Dors",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            1,
+                                            2
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_dorsal",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Dorsale",
+                      "label_en":  "Dorsal skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C3_B",
+                      "svg_element_id":  "C3_B",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  3,
+                      "related_claws":  [
+                                            3
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "bulb",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Bulbo",
+                      "label_en":  "Bulb",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C3_S",
+                      "svg_element_id":  "C3_S",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  3,
+                      "related_claws":  [
+                                            3
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "sole",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Suola",
+                      "label_en":  "Sole",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C3_P",
+                      "svg_element_id":  "C3_P",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  3,
+                      "related_claws":  [
+                                            3
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "toe",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Punta",
+                      "label_en":  "Toe",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C3_APX",
+                      "svg_element_id":  "C3_APX",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  3,
+                      "related_claws":  [
+                                            3
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "apex",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Apice",
+                      "label_en":  "Apex",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C3_WL_AB",
+                      "svg_element_id":  "C3_WL_AB",
+                      "legacy_id":  "C3_LBab",
+                      "expected_legacy_svg_element_id":  "C3_LBab",
+                      "claw_number":  3,
+                      "related_claws":  [
+                                            3
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_abaxial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca abassiale",
+                      "label_en":  "Abaxial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C3_WL_AX",
+                      "svg_element_id":  "C3_WL_AX",
+                      "legacy_id":  "C3_LBax",
+                      "expected_legacy_svg_element_id":  "C3_LBax",
+                      "claw_number":  3,
+                      "related_claws":  [
+                                            3
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_axial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca assiale",
+                      "label_en":  "Axial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C3_UG",
+                      "svg_element_id":  "C3_UG",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  3,
+                      "related_claws":  [
+                                            3
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "accessory_digit",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Unghiello",
+                      "label_en":  "Accessory digit",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_C3_LAT",
+                      "svg_element_id":  "SKIN_C3_LAT",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  3,
+                      "related_claws":  [
+                                            3
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "internal",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_lateral",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Cute laterale",
+                      "label_en":  "Lateral skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C4_B",
+                      "svg_element_id":  "C4_B",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  4,
+                      "related_claws":  [
+                                            4
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "bulb",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Bulbo",
+                      "label_en":  "Bulb",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C4_S",
+                      "svg_element_id":  "C4_S",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  4,
+                      "related_claws":  [
+                                            4
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "sole",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Suola",
+                      "label_en":  "Sole",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C4_P",
+                      "svg_element_id":  "C4_P",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  4,
+                      "related_claws":  [
+                                            4
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "toe",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Punta",
+                      "label_en":  "Toe",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C4_APX",
+                      "svg_element_id":  "C4_APX",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  4,
+                      "related_claws":  [
+                                            4
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "apex",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Apice",
+                      "label_en":  "Apex",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C4_WL_AB",
+                      "svg_element_id":  "C4_WL_AB",
+                      "legacy_id":  "C4_LBab",
+                      "expected_legacy_svg_element_id":  "C4_LBab",
+                      "claw_number":  4,
+                      "related_claws":  [
+                                            4
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_abaxial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca abassiale",
+                      "label_en":  "Abaxial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C4_WL_AX",
+                      "svg_element_id":  "C4_WL_AX",
+                      "legacy_id":  "C4_LBax",
+                      "expected_legacy_svg_element_id":  "C4_LBax",
+                      "claw_number":  4,
+                      "related_claws":  [
+                                            4
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_axial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca assiale",
+                      "label_en":  "Axial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C4_UG",
+                      "svg_element_id":  "C4_UG",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  4,
+                      "related_claws":  [
+                                            4
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "accessory_digit",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Unghiello",
+                      "label_en":  "Accessory digit",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_C4_LAT",
+                      "svg_element_id":  "SKIN_C4_LAT",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  4,
+                      "related_claws":  [
+                                            4
+                                        ],
+                      "limb":  "right_front",
+                      "digit":  "external",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_lateral",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Cute laterale",
+                      "label_en":  "Lateral skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_34_Nod",
+                      "svg_element_id":  "SKIN_34_Nod",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            3,
+                                            4
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_nodello",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Nodello",
+                      "label_en":  "Pastern",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_34_D",
+                      "svg_element_id":  "SKIN_34_D",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            3,
+                                            4
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_digital",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Digitale",
+                      "label_en":  "Digital skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_34_ID",
+                      "svg_element_id":  "SKIN_34_ID",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            3,
+                                            4
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_interdigital",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Interdigitale",
+                      "label_en":  "Interdigital skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_34_Dors",
+                      "svg_element_id":  "SKIN_34_Dors",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            3,
+                                            4
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_dorsal",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Dorsale",
+                      "label_en":  "Dorsal skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C5_B",
+                      "svg_element_id":  "C5_B",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  5,
+                      "related_claws":  [
+                                            5
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "bulb",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Bulbo",
+                      "label_en":  "Bulb",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C5_S",
+                      "svg_element_id":  "C5_S",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  5,
+                      "related_claws":  [
+                                            5
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "sole",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Suola",
+                      "label_en":  "Sole",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C5_P",
+                      "svg_element_id":  "C5_P",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  5,
+                      "related_claws":  [
+                                            5
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "toe",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Punta",
+                      "label_en":  "Toe",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C5_APX",
+                      "svg_element_id":  "C5_APX",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  5,
+                      "related_claws":  [
+                                            5
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "apex",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Apice",
+                      "label_en":  "Apex",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C5_WL_AB",
+                      "svg_element_id":  "C5_WL_AB",
+                      "legacy_id":  "C5_LBab",
+                      "expected_legacy_svg_element_id":  "C5_LBab",
+                      "claw_number":  5,
+                      "related_claws":  [
+                                            5
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_abaxial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca abassiale",
+                      "label_en":  "Abaxial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C5_WL_AX",
+                      "svg_element_id":  "C5_WL_AX",
+                      "legacy_id":  "C5_LBax",
+                      "expected_legacy_svg_element_id":  "C5_LBax",
+                      "claw_number":  5,
+                      "related_claws":  [
+                                            5
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_axial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca assiale",
+                      "label_en":  "Axial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C5_UG",
+                      "svg_element_id":  "C5_UG",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  5,
+                      "related_claws":  [
+                                            5
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "accessory_digit",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Unghiello",
+                      "label_en":  "Accessory digit",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_C5_LAT",
+                      "svg_element_id":  "SKIN_C5_LAT",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  5,
+                      "related_claws":  [
+                                            5
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "external",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_lateral",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Cute laterale",
+                      "label_en":  "Lateral skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C6_B",
+                      "svg_element_id":  "C6_B",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  6,
+                      "related_claws":  [
+                                            6
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "bulb",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Bulbo",
+                      "label_en":  "Bulb",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C6_S",
+                      "svg_element_id":  "C6_S",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  6,
+                      "related_claws":  [
+                                            6
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "sole",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Suola",
+                      "label_en":  "Sole",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C6_P",
+                      "svg_element_id":  "C6_P",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  6,
+                      "related_claws":  [
+                                            6
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "toe",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Punta",
+                      "label_en":  "Toe",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C6_APX",
+                      "svg_element_id":  "C6_APX",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  6,
+                      "related_claws":  [
+                                            6
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "apex",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Apice",
+                      "label_en":  "Apex",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C6_WL_AB",
+                      "svg_element_id":  "C6_WL_AB",
+                      "legacy_id":  "C6_LBab",
+                      "expected_legacy_svg_element_id":  "C6_LBab",
+                      "claw_number":  6,
+                      "related_claws":  [
+                                            6
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_abaxial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca abassiale",
+                      "label_en":  "Abaxial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C6_WL_AX",
+                      "svg_element_id":  "C6_WL_AX",
+                      "legacy_id":  "C6_LBax",
+                      "expected_legacy_svg_element_id":  "C6_LBax",
+                      "claw_number":  6,
+                      "related_claws":  [
+                                            6
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_axial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca assiale",
+                      "label_en":  "Axial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C6_UG",
+                      "svg_element_id":  "C6_UG",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  6,
+                      "related_claws":  [
+                                            6
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "accessory_digit",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Unghiello",
+                      "label_en":  "Accessory digit",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_C6_LAT",
+                      "svg_element_id":  "SKIN_C6_LAT",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  6,
+                      "related_claws":  [
+                                            6
+                                        ],
+                      "limb":  "left_hind",
+                      "digit":  "internal",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_lateral",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Cute laterale",
+                      "label_en":  "Lateral skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_56_Nod",
+                      "svg_element_id":  "SKIN_56_Nod",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            5,
+                                            6
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_nodello",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Nodello",
+                      "label_en":  "Pastern",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_56_D",
+                      "svg_element_id":  "SKIN_56_D",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            5,
+                                            6
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_digital",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Digitale",
+                      "label_en":  "Digital skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_56_ID",
+                      "svg_element_id":  "SKIN_56_ID",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            5,
+                                            6
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_interdigital",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Interdigitale",
+                      "label_en":  "Interdigital skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_56_Dors",
+                      "svg_element_id":  "SKIN_56_Dors",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            5,
+                                            6
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_dorsal",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Dorsale",
+                      "label_en":  "Dorsal skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C7_B",
+                      "svg_element_id":  "C7_B",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  7,
+                      "related_claws":  [
+                                            7
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "bulb",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Bulbo",
+                      "label_en":  "Bulb",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C7_S",
+                      "svg_element_id":  "C7_S",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  7,
+                      "related_claws":  [
+                                            7
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "sole",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Suola",
+                      "label_en":  "Sole",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C7_P",
+                      "svg_element_id":  "C7_P",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  7,
+                      "related_claws":  [
+                                            7
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "toe",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Punta",
+                      "label_en":  "Toe",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C7_APX",
+                      "svg_element_id":  "C7_APX",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  7,
+                      "related_claws":  [
+                                            7
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "apex",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Apice",
+                      "label_en":  "Apex",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C7_WL_AB",
+                      "svg_element_id":  "C7_WL_AB",
+                      "legacy_id":  "C7_LBab",
+                      "expected_legacy_svg_element_id":  "C7_LBab",
+                      "claw_number":  7,
+                      "related_claws":  [
+                                            7
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_abaxial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca abassiale",
+                      "label_en":  "Abaxial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C7_WL_AX",
+                      "svg_element_id":  "C7_WL_AX",
+                      "legacy_id":  "C7_LBax",
+                      "expected_legacy_svg_element_id":  "C7_LBax",
+                      "claw_number":  7,
+                      "related_claws":  [
+                                            7
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_axial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca assiale",
+                      "label_en":  "Axial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C7_UG",
+                      "svg_element_id":  "C7_UG",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  7,
+                      "related_claws":  [
+                                            7
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "internal",
+                      "zone_type":  "horn",
+                      "zone_code":  "accessory_digit",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Unghiello",
+                      "label_en":  "Accessory digit",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_C7_LAT",
+                      "svg_element_id":  "SKIN_C7_LAT",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  7,
+                      "related_claws":  [
+                                            7
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "internal",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_lateral",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Cute laterale",
+                      "label_en":  "Lateral skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C8_B",
+                      "svg_element_id":  "C8_B",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  8,
+                      "related_claws":  [
+                                            8
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "bulb",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Bulbo",
+                      "label_en":  "Bulb",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C8_S",
+                      "svg_element_id":  "C8_S",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  8,
+                      "related_claws":  [
+                                            8
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "sole",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Suola",
+                      "label_en":  "Sole",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C8_P",
+                      "svg_element_id":  "C8_P",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  8,
+                      "related_claws":  [
+                                            8
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "toe",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Punta",
+                      "label_en":  "Toe",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C8_APX",
+                      "svg_element_id":  "C8_APX",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  8,
+                      "related_claws":  [
+                                            8
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "apex",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Apice",
+                      "label_en":  "Apex",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C8_WL_AB",
+                      "svg_element_id":  "C8_WL_AB",
+                      "legacy_id":  "C8_LBab",
+                      "expected_legacy_svg_element_id":  "C8_LBab",
+                      "claw_number":  8,
+                      "related_claws":  [
+                                            8
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_abaxial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca abassiale",
+                      "label_en":  "Abaxial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C8_WL_AX",
+                      "svg_element_id":  "C8_WL_AX",
+                      "legacy_id":  "C8_LBax",
+                      "expected_legacy_svg_element_id":  "C8_LBax",
+                      "claw_number":  8,
+                      "related_claws":  [
+                                            8
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "white_line_axial",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Linea bianca assiale",
+                      "label_en":  "Axial white line",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "C8_UG",
+                      "svg_element_id":  "C8_UG",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  8,
+                      "related_claws":  [
+                                            8
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "external",
+                      "zone_type":  "horn",
+                      "zone_code":  "accessory_digit",
+                      "observation_group":  "horn_lesion",
+                      "popup_kind":  "horn",
+                      "label_it":  "Unghiello",
+                      "label_en":  "Accessory digit",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_C8_LAT",
+                      "svg_element_id":  "SKIN_C8_LAT",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  8,
+                      "related_claws":  [
+                                            8
+                                        ],
+                      "limb":  "right_hind",
+                      "digit":  "external",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_lateral",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Cute laterale",
+                      "label_en":  "Lateral skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_78_Nod",
+                      "svg_element_id":  "SKIN_78_Nod",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            7,
+                                            8
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_nodello",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Nodello",
+                      "label_en":  "Pastern",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_78_D",
+                      "svg_element_id":  "SKIN_78_D",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            7,
+                                            8
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_digital",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Digitale",
+                      "label_en":  "Digital skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_78_ID",
+                      "svg_element_id":  "SKIN_78_ID",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            7,
+                                            8
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_interdigital",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Interdigitale",
+                      "label_en":  "Interdigital skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  },
+                  {
+                      "id":  "SKIN_78_Dors",
+                      "svg_element_id":  "SKIN_78_Dors",
+                      "legacy_id":  null,
+                      "expected_legacy_svg_element_id":  null,
+                      "claw_number":  null,
+                      "related_claws":  [
+                                            7,
+                                            8
+                                        ],
+                      "limb":  null,
+                      "digit":  "central",
+                      "zone_type":  "derma",
+                      "zone_code":  "skin_dorsal",
+                      "observation_group":  "derma_lesion",
+                      "popup_kind":  "skin",
+                      "label_it":  "Dorsale",
+                      "label_en":  "Dorsal skin",
+                      "is_clickable":  true,
+                      "is_definitive":  false,
+                      "requires_human_approval":  true,
+                      "human_approval_reason":  "Approved macro decisions are applied. Human review remains required only for official terminology alignment and final SVG path correspondence before promotion.",
+                      "approval_notes":  [
+                                             "approved_macro_decisions_applied",
+                                             "official_icm_terminology_alignment_pending",
+                                             "final_svg_path_correspondence_pending"
+                                         ]
+                  }
+              ]
+}
