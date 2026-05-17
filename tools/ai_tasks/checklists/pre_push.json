@@ -1,0 +1,29 @@
+{
+  "checklist_id": "pre_push",
+  "steps": [
+    {
+      "id": "branch",
+      "command": "git branch --show-current",
+      "requirement": "La branch attiva deve essere corretta e non main, salvo richiesta esplicita."
+    },
+    {
+      "id": "status",
+      "command": "git status --short",
+      "requirement": "Lo stato finale deve essere compreso e riportato."
+    },
+    {
+      "id": "head_commit",
+      "command": "git log --oneline -1",
+      "requirement": "HEAD deve essere il commit da pushare."
+    },
+    {
+      "id": "push",
+      "command": "git push -u origin <branch>",
+      "requirement": "Eseguire solo se l'utente ha richiesto push esplicitamente."
+    },
+    {
+      "id": "report",
+      "requirement": "Riportare branch remota, link PR se disponibile e stato git finale."
+    }
+  ]
+}

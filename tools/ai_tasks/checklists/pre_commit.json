@@ -1,0 +1,36 @@
+{
+  "checklist_id": "pre_commit",
+  "steps": [
+    {
+      "id": "branch",
+      "command": "git branch --show-current",
+      "requirement": "La branch attiva deve essere quella attesa."
+    },
+    {
+      "id": "status",
+      "command": "git status --short",
+      "requirement": "Verificare modifiche, file non tracciati e output generati."
+    },
+    {
+      "id": "staged",
+      "command": "git diff --cached --name-only",
+      "requirement": "Lo staged deve contenere solo i file previsti dal task."
+    },
+    {
+      "id": "generated_outputs",
+      "requirement": "Nessun output generato deve essere staged salvo richiesta esplicita."
+    },
+    {
+      "id": "legacy_files",
+      "requirement": "Nessun file legacy deve essere staged per errore."
+    },
+    {
+      "id": "tests",
+      "requirement": "Eseguire o documentare i test/comandi previsti."
+    },
+    {
+      "id": "final_report",
+      "requirement": "Preparare report finale standard."
+    }
+  ]
+}
