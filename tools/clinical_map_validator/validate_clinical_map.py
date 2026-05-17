@@ -24,6 +24,17 @@ REQUIRED_AREA_FIELDS = {
     "is_clickable",
 }
 NON_CLINICAL_SVG_IDS = {"title", "desc", "clickable_canvas_placeholder"}
+REQUIRED_DRAFT_FIELDS = {
+    "schema_version",
+    "map_id",
+    "version",
+    "status",
+    "is_definitive",
+    "candidate_area_count",
+    "foot_pairs",
+    "zone_templates",
+    "promotion_blockers",
+}
 
 
 def load_json(path: Path) -> dict:
@@ -53,7 +64,45 @@ def resolve_manifest_path(map_root: Path, manifest_dir: Path, value: str) -> Pat
     return path
 
 
-def validate(map_root: Path) -> int:
+def validate_draft_taxonomy(path: Path, expected_map_id: str, expected_version: int) -> list[str]:
+    errors: list[str] = []
+    draft = load_json(path)
+
+    missing = sorted(REQUIRED_DRAFT_FIELDS - set(draft))
+    if missing:
+        errors.append(f"Draft taxonomy missing fields: {', '.join(missing)}")
+
+    if draft.get("map_id") != expected_map_id:
+        errors.append("Draft taxonomy map_id does not match map manifest")
+    if draft.get("version") != expected_version:
+        errors.append("Draft taxonomy version does not match map manifest")
+    if draft.get("is_definitive") is not False:
+        errors.append("Draft taxonomy must have is_definitive=false")
+
+    foot_pairs = draft.get("foot_pairs", [])
+    zone_templates = draft.get("zone_templates", [])
+    if not isinstance(foot_pairs, list) or len(foot_pairs) != 4:
+        errors.append("Draft taxonomy should contain 4 foot_pairs")
+    if not isinstance(zone_templates, list) or len(zone_templates) != 12:
+        errors.append("Draft taxonomy should contain 12 zone_templates")
+
+    candidate_count = draft.get("candidate_area_count")
+    if candidate_count != 80:
+        errors.append("Draft taxonomy candidate_area_count should be 80")
+
+    for index, template in enumerate(zone_templates if isinstance(zone_templates, list) else []):
+        if not isinstance(template, dict):
+            errors.append(f"Draft zone template at index {index} must be an object")
+            continue
+        if template.get("requires_human_approval") is not True:
+            errors.append(
+                f"Draft zone template {template.get('template_id', index)} must require human approval"
+            )
+
+    return errors
+
+
+def validate(map_root: Path, draft_taxonomy: Path | None = None) -> int:
     manifest_dir = map_root / "manifests"
     map_manifest_path = manifest_dir / "map_manifest.json"
     areas_manifest_path = manifest_dir / "anatomical_areas.json"
@@ -135,6 +184,20 @@ def validate(map_root: Path) -> int:
     if not areas:
         warnings.append("No manifest areas are defined yet; this is acceptable for draft setup.")
 
+    if draft_taxonomy:
+        try:
+            draft_errors = validate_draft_taxonomy(
+                draft_taxonomy,
+                expected_map_id=str(map_manifest.get("map_id")),
+                expected_version=int(map_manifest.get("version")),
+            )
+            if draft_errors:
+                errors.extend(draft_errors)
+            else:
+                print(f"Draft taxonomy: {draft_taxonomy}")
+        except Exception as exc:
+            errors.append(f"Draft taxonomy validation failed: {exc}")
+
     orphan_svg_ids = sorted(
         svg_id
         for svg_id in svg_ids
@@ -164,8 +227,13 @@ def main() -> int:
         default=DEFAULT_MAP_ROOT,
         help="Clinical map version root directory.",
     )
+    parser.add_argument(
+        "--draft-taxonomy",
+        type=Path,
+        help="Optional draft taxonomy JSON to validate without making it required.",
+    )
     args = parser.parse_args()
-    return validate(args.map_root)
+    return validate(args.map_root, args.draft_taxonomy)
 
 
 if __name__ == "__main__":
