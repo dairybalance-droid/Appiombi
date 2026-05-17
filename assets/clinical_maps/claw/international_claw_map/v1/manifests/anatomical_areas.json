@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "map_id": "international_claw_map",
+  "version": 1,
+  "status": "draft_schema",
+  "notes": [
+    "Initial manifest structure for future clickable anatomical areas.",
+    "Definitive area IDs and clinical taxonomy mappings will be validated in a later phase."
+  ],
+  "area_field_contract": {
+    "id": "Stable clinical area identifier saved by the app.",
+    "svg_element_id": "Matching SVG element id in the clickable SVG.",
+    "claw_number": "Canonical claw number from 1 to 8, or null for shared skin areas.",
+    "limb": "Canonical limb code, for example left_front, right_front, left_rear, right_rear.",
+    "digit": "Canonical digit position, for example external, internal, central, or null.",
+    "zone_type": "Clinical zone family, for example horn or derma.",
+    "zone_code": "Canonical zone code used for storage and reporting.",
+    "observation_group": "Observation group used by UI and database payloads.",
+    "popup_kind": "Popup type to open when clicked.",
+    "label_it": "Italian display label.",
+    "label_en": "English display label.",
+    "is_clickable": "Whether this area should receive user taps."
+  },
+  "areas": []
+}
