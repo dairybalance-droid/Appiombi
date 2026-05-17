@@ -35,10 +35,30 @@ REQUIRED_DRAFT_FIELDS = {
     "zone_templates",
     "promotion_blockers",
 }
+REQUIRED_PROPOSED_FINAL_FIELDS = {
+    "id",
+    "svg_element_id",
+    "legacy_id",
+    "expected_legacy_svg_element_id",
+    "claw_number",
+    "related_claws",
+    "limb",
+    "digit",
+    "zone_type",
+    "zone_code",
+    "observation_group",
+    "popup_kind",
+    "label_it",
+    "label_en",
+    "is_clickable",
+    "is_definitive",
+    "requires_human_approval",
+}
+ALLOWED_PROPOSED_ZONE_TYPES = {"horn", "derma"}
 
 
 def load_json(path: Path) -> dict:
-    with path.open("r", encoding="utf-8") as handle:
+    with path.open("r", encoding="utf-8-sig") as handle:
         value = json.load(handle)
     if not isinstance(value, dict):
         raise ValueError(f"{path} must contain a JSON object")
@@ -102,7 +122,103 @@ def validate_draft_taxonomy(path: Path, expected_map_id: str, expected_version: 
     return errors
 
 
-def validate(map_root: Path, draft_taxonomy: Path | None = None) -> int:
+def validate_proposed_final_taxonomy(
+    path: Path,
+    expected_map_id: str,
+    expected_version: int,
+) -> list[str]:
+    errors: list[str] = []
+    proposed = load_json(path)
+
+    if proposed.get("map_id") != expected_map_id:
+        errors.append("Proposed final taxonomy map_id does not match map manifest")
+    if proposed.get("version") != expected_version:
+        errors.append("Proposed final taxonomy version does not match map manifest")
+    if proposed.get("is_definitive") is not False:
+        errors.append("Proposed final taxonomy must have top-level is_definitive=false")
+
+    areas = proposed.get("areas")
+    if not isinstance(areas, list):
+        return ["Proposed final taxonomy field 'areas' must be a list"]
+    if len(areas) != 80:
+        errors.append("Proposed final taxonomy should contain 80 areas")
+    if proposed.get("candidate_area_count") != 80:
+        errors.append("Proposed final taxonomy candidate_area_count should be 80")
+
+    ids: list[str] = []
+    svg_ids: list[str] = []
+    legacy_ids: list[str] = []
+    for index, area in enumerate(areas):
+        if not isinstance(area, dict):
+            errors.append(f"Proposed final area at index {index} must be an object")
+            continue
+
+        missing = sorted(REQUIRED_PROPOSED_FINAL_FIELDS - set(area))
+        if missing:
+            errors.append(
+                f"Proposed final area at index {index} missing fields: {', '.join(missing)}"
+            )
+
+        area_id = area.get("id")
+        svg_element_id = area.get("svg_element_id")
+        legacy_id = area.get("legacy_id")
+        expected_legacy_svg_element_id = area.get("expected_legacy_svg_element_id")
+        zone_type = area.get("zone_type")
+        observation_group = area.get("observation_group")
+        popup_kind = area.get("popup_kind")
+
+        if isinstance(area_id, str):
+            ids.append(area_id)
+        if isinstance(svg_element_id, str):
+            svg_ids.append(svg_element_id)
+        if isinstance(legacy_id, str):
+            legacy_ids.append(legacy_id)
+            if expected_legacy_svg_element_id != legacy_id:
+                errors.append(
+                    f"Proposed final area {area_id or index} has incoherent expected legacy SVG id"
+                )
+        elif expected_legacy_svg_element_id is not None:
+            errors.append(
+                f"Proposed final area {area_id or index} has expected legacy SVG id without legacy_id"
+            )
+
+        if zone_type not in ALLOWED_PROPOSED_ZONE_TYPES:
+            errors.append(f"Proposed final area {area_id or index} has invalid zone_type")
+        if zone_type == "horn" and (
+            observation_group != "horn_lesion" or popup_kind != "horn"
+        ):
+            errors.append(f"Proposed final horn area {area_id or index} has invalid group/popup")
+        if zone_type == "derma" and (
+            observation_group != "derma_lesion" or popup_kind != "skin"
+        ):
+            errors.append(f"Proposed final derma area {area_id or index} has invalid group/popup")
+        if area.get("is_definitive") is not False:
+            errors.append(f"Proposed final area {area_id or index} must have is_definitive=false")
+
+    duplicate_ids = sorted(area_id for area_id, count in Counter(ids).items() if count > 1)
+    if duplicate_ids:
+        errors.append(f"Duplicate proposed final area ids: {', '.join(duplicate_ids)}")
+
+    duplicate_svg_ids = sorted(svg_id for svg_id, count in Counter(svg_ids).items() if count > 1)
+    if duplicate_svg_ids:
+        errors.append(
+            f"Duplicate proposed final svg_element_id values: {', '.join(duplicate_svg_ids)}"
+        )
+
+    duplicate_legacy_ids = sorted(
+        legacy_id for legacy_id, count in Counter(legacy_ids).items() if count > 1
+    )
+    if duplicate_legacy_ids:
+        errors.append(f"Duplicate proposed final legacy_id values: {', '.join(duplicate_legacy_ids)}")
+
+    return errors
+
+
+def validate(
+    map_root: Path,
+    draft_taxonomy: Path | None = None,
+    proposed_final_taxonomy: Path | None = None,
+) -> int:
     manifest_dir = map_root / "manifests"
     map_manifest_path = manifest_dir / "map_manifest.json"
     areas_manifest_path = manifest_dir / "anatomical_areas.json"
@@ -198,6 +314,20 @@ def validate(map_root: Path, draft_taxonomy: Path | None = None) -> int:
         except Exception as exc:
             errors.append(f"Draft taxonomy validation failed: {exc}")
 
+    if proposed_final_taxonomy:
+        try:
+            proposed_errors = validate_proposed_final_taxonomy(
+                proposed_final_taxonomy,
+                expected_map_id=str(map_manifest.get("map_id")),
+                expected_version=int(map_manifest.get("version")),
+            )
+            if proposed_errors:
+                errors.extend(proposed_errors)
+            else:
+                print(f"Proposed final taxonomy: {proposed_final_taxonomy}")
+        except Exception as exc:
+            errors.append(f"Proposed final taxonomy validation failed: {exc}")
+
     orphan_svg_ids = sorted(
         svg_id
         for svg_id in svg_ids
@@ -232,8 +362,13 @@ def main() -> int:
         type=Path,
         help="Optional draft taxonomy JSON to validate without making it required.",
     )
+    parser.add_argument(
+        "--proposed-final-taxonomy",
+        type=Path,
+        help="Optional proposed final taxonomy JSON to validate without promoting it.",
+    )
     args = parser.parse_args()
-    return validate(args.map_root, args.draft_taxonomy)
+    return validate(args.map_root, args.draft_taxonomy, args.proposed_final_taxonomy)
 
 
 if __name__ == "__main__":

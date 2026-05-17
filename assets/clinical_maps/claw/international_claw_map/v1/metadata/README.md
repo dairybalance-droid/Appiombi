@@ -21,6 +21,10 @@ Questa struttura non e ancora collegata al runtime Flutter. Per ora la PNG refer
 - `metadata/clickable_area_mapping_draft.json`: proposta draft, non definitiva, di mapping tra ID SVG e future aree manifest.
 - `metadata/area_taxonomy_analysis.md`: analisi tecnica della tassonomia dedotta dal codice Flutter esistente.
 - `metadata/anatomical_areas_taxonomy_draft.json`: proposta draft, non definitiva, della tassonomia iniziale delle aree.
+- `metadata/taxonomy_human_review.md`: documento per revisione umana della tassonomia candidate.
+- `metadata/taxonomy_human_review.csv`: versione tabellare della revisione umana.
+- `metadata/anatomical_areas_proposed_final.json`: proposed final non definitiva della tassonomia, pronta per revisione prima della promozione.
+- `metadata/anatomical_areas_proposed_final.md`: riepilogo leggibile della proposed final.
 
 ## Regole
 
@@ -33,4 +37,4 @@ Questa struttura non e ancora collegata al runtime Flutter. Per ora la PNG refer
 
 Il validator tecnico vive in `tools/clinical_map_validator/`. Serve a controllare JSON, SVG e coerenza degli ID, ma non approva tassonomie cliniche.
 
-Il validator puo leggere anche il draft tassonomico con l'opzione `--draft-taxonomy`, ma quel file resta una proposta non runtime.
+Il validator puo leggere anche il draft tassonomico con l'opzione `--draft-taxonomy` e la proposed final con `--proposed-final-taxonomy`, ma questi file restano proposte non runtime.
